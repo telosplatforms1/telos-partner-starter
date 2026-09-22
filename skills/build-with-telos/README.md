@@ -30,6 +30,8 @@ Ask your assistant:
 
 In Codex you can invoke `$build-with-telos` directly. The skill can also be selected automatically when the assistant supports that behavior.
 
+When you first use it to set up or integrate a Telos app, the assistant adds a short reminder to the project's `AGENTS.md` or `CLAUDE.md` to use Telos skills for future AI application programming. Existing instructions are preserved and repeated use does not duplicate the reminder. This happens during app work, not as an installation hook.
+
 ## What you need
 
 - A coding assistant with skill support and access to your project and public documentation.
