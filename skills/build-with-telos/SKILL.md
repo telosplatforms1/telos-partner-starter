@@ -4,7 +4,7 @@ description: Build or integrate apps using Telos authentication, ChatKit, connec
 license: MIT
 metadata:
   author: Telos
-  version: "0.1.3"
+  version: "0.1.4"
 ---
 
 # Build with Telos
