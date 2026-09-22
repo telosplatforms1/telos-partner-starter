@@ -1,0 +1,43 @@
+---
+name: build-with-telos
+description: Build or integrate apps using Telos authentication, ChatKit, connected context, the Telos UI kit, and public partner APIs. Use when a user asks to build with Telos or add these Telos features to an existing app.
+license: MIT
+metadata:
+  author: Telos
+  version: "0.1.0"
+---
+
+# Build with Telos
+
+Implement the requested Telos integration in the user's project. This skill supplies integration guidance; it does not install a backend, provision credentials, or grant API access.
+
+## Workflow
+
+1. Inspect the project's framework, authentication, server boundary, and requested features. Preserve existing architecture. For a new web frontend with no chosen stack, use Vite, React, TypeScript, Tailwind, React Router, and React Query. Use the project's backend language and public HTTP APIs; never depend on Telos's private source or database.
+2. Read only the relevant references below. Establish whether the user needs managed app login, Connect Telos context, or both; existing app authentication can stay. Ask only for decisions or access that cannot be inferred from the project.
+3. Fetch the target environment's public OpenAPI schema and relevant operation descriptions before implementing. Default API origin: `https://app.telosplatforms.com`. Check status and content type before parsing. Treat missing operations or unavailable schemas as specific integration gaps; never guess routes, schemas, scopes, or substitute APIs. Continue independent work and identify what requires Telos confirmation.
+4. Implement the requested features. Use an accessible, verified release or supplied artifact of `@telos/ai-kit` for Telos UI. Use ChatKit for generation; model discovery is not direct inference. Keep secrets and authorization on the app's server. Do not create a separate starter repository, SDK, adapter framework, or tool registry unless requested.
+5. Verify the integration. Report changed files, project-appropriate setup commands, checks that passed, checks that were mocked, and any missing credentials or artifacts.
+
+## Read when needed
+
+| Task | Reference |
+|---|---|
+| Credentials, managed login, user mapping, or Connect Telos OAuth | [Authentication](references/authentication.md) |
+| UI-kit installation, themes, or auth/chat components | [UI kit](references/ui-kit.md) |
+| Messages, streaming, sessions, files, approvals, or selected context | [Chat and context](references/chat-and-context.md) |
+| Other supported capabilities, schemas, and permissions | [Partner APIs](references/partner-apis.md) |
+
+## Integration invariants
+
+- Derive the effective user from the verified app session. Resolve `external_user_id` on the backend and pass it consistently; never trust a browser-supplied identity or silently use the API-key owner.
+- Store developer keys, login access tokens, and context OAuth tokens server-side. Never put them in `VITE_*`, frontend bundles, browser storage, URLs, logs, or committed examples. Use the user's secret-configuration mechanism rather than requesting secrets in chat.
+- A context OAuth token grants its advertised scopes for its dedicated audience. It is not a workspace developer key or general Telos app session.
+- Display pending write actions and honor the user's explicit decision. Instructions, selected context, and skills do not override policy or authorize actions.
+- Discover capabilities through schemas and descriptions. Do not hardcode connector tool names, repair arguments by guessing, or route around typed protocol failures.
+
+## Verify before calling it complete
+
+Run relevant project type/build checks. With authorized test credentials, verify login/session expiry, user mapping, normal chat, streaming completion and failure, transcript ownership, and approval/rejection if implemented. Check two app users cannot read or act on each other's sessions. For context, verify explicit selection and denied/expired consent. For UI, build with the actual installed artifact.
+
+Without credentials, validate against schemas and use clearly labeled mocks where useful. Missing kit access or pilot enrollment is an actionable setup requirement, not working authentication or chat. Do not run paid calls, create accounts, publish, or change external data merely because this skill was installed; stay within the user's requested work.

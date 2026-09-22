@@ -1,0 +1,3 @@
+interface:
+  display_name: "Build with Telos"
+  short_description: "Build apps with Telos auth, chat, and UI"
