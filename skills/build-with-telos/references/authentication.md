@@ -2,6 +2,25 @@
 
 Read the target deployment's [auth schema](https://app.telosplatforms.com/api/public/openapi/auth.json) and [users schema](https://app.telosplatforms.com/api/public/openapi/users.json). [API authentication](https://app.telosplatforms.com/docs/authentication) explains credential setup. Substitute the configured API origin for other environments.
 
+## Ask which authentication approach to implement
+
+Before implementing authentication or context onboarding, ask:
+
+> Would you like me to implement Telos-managed authentication end to end, or use your own authentication and then integrate Telos context?
+
+Offer these two choices, without silently selecting one:
+
+| Choice | Implementation |
+|---|---|
+| **Telos-managed auth end to end** | Implement signup/login UI, backend calls to Telos managed auth, secure app sessions, protected routes, logout, expiry/reauthentication, and error states. Configure the required scopes/secrets through the user's private configuration mechanism and verify the complete flow where credentials are available. |
+| **My own auth + Telos context** | Preserve the app's existing login or use the user's chosen authentication solution. Verify its server-side session, then implement Connect Telos consent, token storage/renewal, context search, and explicit snippet selection for chat where requested and supported. Do not create Telos-managed login accounts for this path. |
+
+An explicit instruction such as “keep my existing login” or a previously recorded project choice answers this question; do not ask again. Merely finding an auth dependency does not establish the user's choice. If the user chooses their own auth but has neither an implementation nor a selected provider, ask which solution to use before building login. Keep the decision pending while doing independent work; do not treat silence as a selection.
+
+For the managed path, use the managed signup/login section below. Add Connect Telos separately if the user also wants context from existing Telos accounts: managed login does not grant that consent. For the own-auth path, use the OAuth pilot section after establishing the app session. If the request only reads connected context, it needs approved context OAuth access, not a workspace developer key or `/api/users` profile. Add developer-key setup and external-user mapping when ChatKit or another workspace API is required.
+
+Record the selected approach in the project's Telos guidance and implement that path. “End to end” means the actual login/session/protected-route flow, not just forms or a mock. Respect the requested deployment scope; the choice does not itself authorize production deployment or creating real accounts for testing. Report missing credentials, pilot approval, unsupported lifecycle features, and untested live behavior explicitly.
+
 ## Separate credentials and identities
 
 | Credential | Purpose | Storage |
@@ -46,7 +65,7 @@ Keep returned `external_user_id` and `telos_user_id` in the server mapping. Pass
 
 ## Managed app signup/login
 
-Use when Telos should manage the app's email/password login. Read the [managed-auth schema](https://app.telosplatforms.com/api/public/openapi/users/auth0.json). The backend calls:
+Use for the user's selected Telos-managed path. Implement the UI, backend, and app-session lifecycle together, retaining any explicit project constraints. Read the [managed-auth schema](https://app.telosplatforms.com/api/public/openapi/users/auth0.json). The backend calls:
 
 | Operation | Scope | Result |
 |---|---|---|
@@ -78,7 +97,7 @@ Use an HttpOnly cookie, Secure in HTTPS environments, appropriate SameSite/CSRF 
 
 ## Connect Telos: approved-partner OAuth pilot
 
-This is optional and separate from app login. A user with an existing Telos account consents to read-only context search. Registration is manually approved. Obtain issuer, client ID/secret, distinct context audience, allowed callback URL, and enabled API origin through Telos's approved onboarding channel; configure secrets privately.
+Use for the user's selected own-auth-plus-context path, or when they additionally request connected context alongside managed auth. App login and Telos context consent remain separate. A user with an existing Telos account consents to read-only context search. Registration is manually approved. Obtain issuer, client ID/secret, distinct context audience, allowed callback URL, and enabled API origin through Telos's approved onboarding channel; configure secrets privately.
 
 The pilot defines `/api/context/v1/config`, `/api/context/v1/openapi.json`, and `POST /api/context/v1/search`, separately from the developer schema. A 401/403/404 from discovery is not a valid configuration. Confirm enrollment/deployment instead of trying workspace keys against another audience.
 
