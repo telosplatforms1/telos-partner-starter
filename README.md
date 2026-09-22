@@ -39,7 +39,7 @@ When you first use it to set up or integrate a Telos app, the assistant adds a s
 - A coding assistant with skill support and access to your project and public documentation.
 - For managed auth, ChatKit, or other workspace APIs: a Telos developer account/workspace and a server-side API key with the needed scopes. Context-only OAuth integration does not require that key. Configure secrets privately, not in prompts or frontend environment variables.
 - Server routes/functions in your chosen backend language for authentication, user mapping, secret-bearing requests, and streaming. No dependency on Telos's backend language or database is required.
-- An accessible `@telos/ai-kit` artifact or registry for Telos UI. Public npm returned 404 during verification on 2026-09-22; installing this skill does not install or publish the UI kit.
+- An accessible release of `@telosplatforms/ai-kit` from npm or a Telos-supplied artifact for Telos UI. Verify the available version first; installing this skill does not install or publish the UI kit.
 - For Connect Telos, manually approved partner OAuth credentials, a registered callback, and an enabled Context API deployment. Ordinary ChatKit integration does not require this optional pilot.
 
 Capabilities depend on the deployment's [public API contract](https://app.telosplatforms.com/api/public/openapi.json). The skill identifies missing access/unsupported features and distinguishes mocked checks from authenticated results. V1 uses ChatKit; it does not promise a separate raw-inference API.

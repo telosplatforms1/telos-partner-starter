@@ -4,7 +4,7 @@ description: Build or integrate apps using Telos authentication, ChatKit, connec
 license: MIT
 metadata:
   author: Telos
-  version: "0.1.2"
+  version: "0.1.3"
 ---
 
 # Build with Telos
@@ -16,7 +16,7 @@ Implement the requested Telos integration in the user's project. This skill supp
 1. Inspect the project's framework, authentication, server boundary, and requested features. Preserve existing architecture. For a new web frontend with no chosen stack, use Vite, React, TypeScript, Tailwind, React Router, and React Query. Use the project's backend language and public HTTP APIs; never depend on Telos's private source or database.
 2. Read only the relevant references below. Before implementing authentication or context onboarding, ask the user to choose **Telos-managed authentication end to end** or **their own authentication with Telos context integration**, following [Authentication](references/authentication.md). Honor a choice already explicitly made in this project or conversation instead of asking again. Do not choose solely because an auth library is installed. Wait for an unresolved choice before auth-dependent changes; continue independent work. Unrelated tasks do not require this question.
 3. Fetch the target environment's public OpenAPI schema and relevant operation descriptions before implementing. Default API origin: `https://app.telosplatforms.com`. Check status and content type before parsing. Treat missing operations or unavailable schemas as specific integration gaps; never guess routes, schemas, scopes, or substitute APIs. Continue independent work and identify what requires Telos confirmation.
-4. Implement the requested features and record the project guidance below during app setup or integration. Use an accessible, verified release or supplied artifact of `@telos/ai-kit` for Telos UI. Use ChatKit for generation; model discovery is not direct inference. Keep secrets and authorization on the app's server. Do not create a separate starter repository, SDK, adapter framework, or tool registry unless requested.
+4. Implement the requested features and record the project guidance below during app setup or integration. Use an accessible, verified release or supplied artifact of `@telosplatforms/ai-kit` for Telos UI. Use ChatKit for generation; model discovery is not direct inference. Keep secrets and authorization on the app's server. Do not create a separate starter repository, SDK, adapter framework, or tool registry unless requested.
 5. Verify the integration. Report changed files, project-appropriate setup commands, checks that passed, checks that were mocked, and any missing credentials or artifacts.
 
 ## Keep Telos guidance in the project
