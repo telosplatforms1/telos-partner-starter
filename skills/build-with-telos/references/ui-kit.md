@@ -2,42 +2,48 @@
 
 Use `@telosplatforms/ai-kit` for Telos components, tokens, themes, and styles. It is presentational React UI; auth, routing, networking, streaming state, and authorization belong in application containers.
 
-## Verify access first
+## Install the released design system
 
-`@telosplatforms/ai-kit@0.1.0` is published on [public npm](https://www.npmjs.com/package/@telosplatforms/ai-kit). No private Telos repository or registry access is required to install it. Verify the requested version before installation; the skill does not install or publish packages merely by being installed.
+Skill release 0.1.8 distributes `@telosplatforms/ai-kit@0.1.1`, including the catalog, as a [GitHub release asset](https://github.com/telosplatforms1/telos-partner-starter/releases/download/v0.1.8/telosplatforms-ai-kit-0.1.1.tgz). Use this exact artifact during design-system setup. The npm 0.1.0 release contains components and styles but no catalog.
 
-Check the configured registry or supplied artifact before promising installation:
-
-```sh
-npm view @telosplatforms/ai-kit@0.1.0 version peerDependencies exports --json
-```
-
-If available, install an exact verified version using the project's package manager and lockfile. If Telos supplies a tarball/authenticated registry, verify its manifest identifies `@telosplatforms/ai-kit` and use that source. Do not invent versions, Git URLs, registries, or substitute packages. If unavailable, request kit access, continue independent API work, and mark Telos UI integration incomplete.
-
-For the verified initial release, install with the project’s package manager:
+Download it and verify its SHA-256 before installation:
 
 ```sh
-npm install @telosplatforms/ai-kit@0.1.0 next-themes
+curl --fail --location --output telosplatforms-ai-kit-0.1.1.tgz 'https://github.com/telosplatforms1/telos-partner-starter/releases/download/v0.1.8/telosplatforms-ai-kit-0.1.1.tgz'
+shasum -a 256 telosplatforms-ai-kit-0.1.1.tgz
 ```
 
-Keep the host app’s React and React DOM versions aligned. Add those dependencies
-only if the project does not already provide them.
+Expected SHA-256: `d72d3d1daea84fc3ebebff7244f753bc0c28c33dc272fcc2cd1b8c2bdd8434c7`. Check that the archive's `package/package.json` identifies `@telosplatforms/ai-kit` version `0.1.1`, and that `package/dist/storybook/index.html` and `index.json` exist. If download or verification fails, report that failure and continue independent work; do not substitute another package or generate a replacement catalog.
 
-## Start Storybook after installation
+Install the verified archive using the project's package manager and lockfile:
 
-The published kit supplies components and styles, not the Telos repository's Storybook catalog. Initialize Storybook for the consuming project's framework when absent, then finish the integration before handing it to the patron:
+```sh
+npm install ./telosplatforms-ai-kit-0.1.1.tgz next-themes
+```
 
-1. Create or reuse stories under a clear `Telos` sidebar group that import real components from `@telosplatforms/ai-kit`. Include a design-system overview with representative controls and a chat example, using the installed exports and prop types. Preserve existing project stories; remove only untouched initializer demo stories and the generated “Configure your project” page when replacing that scaffold.
-2. Ensure `.storybook/main.*` includes the Telos story files. In `.storybook/preview.*`, import the kit tokens, component styles, and any chosen fonts, and wrap stories with the kit theme provider. Respect the patron's light/dark choice once selected. Follow the installed Storybook version's [configuration guidance](https://storybook.js.org/docs/configure).
-3. Start the project's Storybook development script with its package manager, or reuse its running instance. Read the generated story index to confirm the Telos stories are registered and obtain the overview's actual story ID.
-4. Open the direct Telos overview URL and verify in the browser that real kit components render with styles, with no preview import/runtime errors. Also check the chat example. An HTTP 200, a ready server message, or the default Storybook setup page alone is insufficient. If browser verification is unavailable, report that limitation instead of claiming the preview is verified.
-5. Leave Storybook running and share the verified direct Telos overview link, not a bare server URL that may reopen the setup page. If setup or rendering fails, fix it or report the concrete blocker before calling design-system setup complete. Then continue with the theme choice and authentication next step in the skill workflow.
+Keep the archive at the project-relative path recorded by the lockfile so clean installs can resolve it. Keep the host app's React and React DOM versions aligned; add them only if absent. Installing the skill alone does not install the kit.
+
+## Open the downloaded Telos design system
+
+The kit includes a prebuilt Storybook at `dist/storybook` with the maintained Telos kit component stories, foundations, branding, controls, and light/dark themes. Use this catalog directly; do not initialize a replacement Storybook or generate a two-story showcase and call it the Telos design system. The catalog is built from the same sources as the release and requires no private repository or Storybook build dependencies in the consuming app.
+
+1. Locate the installed package via its exported `package.json` (for example, `node -p "require.resolve('@telosplatforms/ai-kit/package.json')"`). Check that its sibling `dist/storybook/index.html` and `index.json` exist. If absent, obtain a verified catalog-bearing release or supplied tarball; mark catalog setup incomplete instead of synthesizing one.
+2. Serve that `dist/storybook` directory on loopback with an available static HTTP server. For a standard npm install and Python 3:
+
+   ```sh
+   python3 -m http.server 6006 --bind 127.0.0.1 --directory node_modules/@telosplatforms/ai-kit/dist/storybook
+   ```
+
+   Resolve the actual package directory for other layouts. Reuse an existing server only if it serves this catalog; use a free port if 6006 belongs to another app. Preserve the consuming project's own Storybook and stories.
+3. Read the served `index.json` and find the `Kit/Overview` / `All Components` story. Open its direct URL, normally `http://127.0.0.1:6006/?path=/story/kit-overview--all-components`. Never hand off a saved `/settings/guide` or onboarding URL.
+4. Verify in the browser that the overview and a component's individual story render with Telos styles, that the catalog sidebar contains the component families, and that the light/dark toolbar works. An HTTP 200 or a ready server message alone is insufficient. If browser verification is unavailable, report that limitation.
+5. Leave the static server running and share the verified direct catalog link. Then continue with the theme choice and authentication next step in the skill workflow. A preview theme toggle does not replace recording the patron's chosen app theme.
 
 ## Imports and composition
 
-Inspect the accessible version's exports and peer dependencies. Version 0.1.0 supports React 18.2 or 19, React DOM, and `next-themes`. `next-themes` does not require Next.js; retain Vite for new frontends unless otherwise chosen.
+Inspect the accessible version's exports and peer dependencies. Version 0.1.1 supports React 18.2 or 19, React DOM, and `next-themes`. `next-themes` does not require Next.js; retain Vite for new frontends unless otherwise chosen.
 
-Version 0.1.0 defines these entrypoints:
+Version 0.1.1 defines these entrypoints:
 
 ```tsx
 import "@telosplatforms/ai-kit/tokens.css";

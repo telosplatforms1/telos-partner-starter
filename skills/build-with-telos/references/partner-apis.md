@@ -43,6 +43,6 @@ Checked 2026-09-22; recheck these observations instead of treating them as perma
 - Production public schema advertises `1.0.0`. Reviewed source advertises `2.1.0` with models, skills, sandboxes, and evaluations absent from the production full schema. Follow-up: deploy/publish those operations before promising them in that environment.
 - The public ChatKit envelope has a generic `payload`. Follow-up: publish a concrete core payload covering context, attachment handles, and action state. Until then verify against deployed docs and mark unconfirmed features blocked.
 - Production `/api/context/v1/config` returned 401 without a token. Follow-up: confirm pilot enrollment, deployment, issuer/audience, and schema access before use; local implementation does not prove production readiness.
-- The UI kit is published as `@telosplatforms/ai-kit@0.1.0` on public npm. Verify the installed version and exports before use; see [UI kit](ui-kit.md).
+- Use the verified `@telosplatforms/ai-kit@0.1.1` release archive linked in [UI kit](ui-kit.md); it includes the downloaded catalog. The older npm 0.1.0 package does not.
 
 Record newly discovered gaps with method/path, observed behavior, required contract clarification, and user-visible consequence. Do not modify Telos APIs or guess compatibility behavior to hide gaps.
