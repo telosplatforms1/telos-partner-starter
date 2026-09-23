@@ -2,48 +2,50 @@
 
 Use `@telosplatforms/ai-kit` for Telos components, tokens, themes, and styles. It is presentational React UI; auth, routing, networking, streaming state, and authorization belong in application containers.
 
-## Install the released design system
+## Install the neutral kit
 
-Skill release 0.1.8 distributes `@telosplatforms/ai-kit@0.1.1`, including the catalog, as a [GitHub release asset](https://github.com/telosplatforms1/telos-partner-starter/releases/download/v0.1.8/telosplatforms-ai-kit-0.1.1.tgz). Use this exact artifact during design-system setup. The npm 0.1.0 release contains components and styles but no catalog.
-
-Download it and verify its SHA-256 before installation:
+The verified `@telosplatforms/ai-kit@0.2.0` archive is published at [the kit 0.2.0 release](https://github.com/telosplatforms1/telos-partner-starter/releases/tag/ai-kit-v0.2.0). Download [the archive](https://github.com/telosplatforms1/telos-partner-starter/releases/download/ai-kit-v0.2.0/telosplatforms-ai-kit-0.2.0.tgz) and [SHA256SUMS](https://github.com/telosplatforms1/telos-partner-starter/releases/download/ai-kit-v0.2.0/SHA256SUMS), then verify it before installation:
 
 ```sh
-curl --fail --location --output telosplatforms-ai-kit-0.1.1.tgz 'https://github.com/telosplatforms1/telos-partner-starter/releases/download/v0.1.8/telosplatforms-ai-kit-0.1.1.tgz'
-shasum -a 256 telosplatforms-ai-kit-0.1.1.tgz
+shasum -a 256 -c SHA256SUMS
 ```
 
-Expected SHA-256: `d72d3d1daea84fc3ebebff7244f753bc0c28c33dc272fcc2cd1b8c2bdd8434c7`. Check that the archive's `package/package.json` identifies `@telosplatforms/ai-kit` version `0.1.1`, and that `package/dist/storybook/index.html` and `index.json` exist. If download or verification fails, report that failure and continue independent work; do not substitute another package or generate a replacement catalog.
+The archive SHA-256 is `d2575f2cd24509cd4af9b010b2a9f5203f1653edf2585a2932065acc505588f4`. Install the local archive with the project's package manager and lockfile. Confirm that it contains `dist/tokens.css`, `dist/theme-template.css`, `dist/kit.css`, and `dist/storybook/index.html` plus `index.json`. If verification fails, report the blocker; never use an older branded package or synthesize a replacement catalog.
 
-Install the verified archive using the project's package manager and lockfile:
+Version 0.2.0 removes the public `BrandProvider`, `useBrand`, `BrandName`, and the `MessageContent` `telos` preset. Preserve component props otherwise. Keep the project's React and React DOM aligned. `ThemeProvider` continues to own light/dark/system mode.
+
+## Give the project its own theme
+
+Inspect the existing project styles and brand guide first. Ask only for unresolved preferences: brand/accent colors, typography, visual style, and light/dark/system mode. Preserve an existing project theme location; otherwise create `src/theme/theme.css` using the installed `@telosplatforms/ai-kit/theme-template.css` as a starting point. Keep local fonts and images inside that theme folder and use relative URLs so the same files work in the app and catalog.
+
+Load styles in this order at the application root: `@telosplatforms/ai-kit/tokens.css`, `@telosplatforms/ai-kit/kit.css`, then the project's theme stylesheet. Keep any existing equivalent color-mode provider; otherwise use the kit `ThemeProvider` with the user's selected mode. Configure Tailwind utilities to use the `designSystemTailwindTheme` export or its CSS variables so `primary`, radii, font families, and shadows follow the project CSS.
+
+## Prepare and preview the theme
+
+Use `scripts/prepare-design-system-preview.mjs` from the installed skill. Locate the kit package directory from its exported `package.json`, then prepare from the app root:
 
 ```sh
-npm install ./telosplatforms-ai-kit-0.1.1.tgz next-themes
+node <installed-build-with-telos-skill>/scripts/prepare-design-system-preview.mjs \
+  --package-dir node_modules/@telosplatforms/ai-kit \
+  --project-dir . \
+  --theme-dir src/theme
 ```
 
-Keep the archive at the project-relative path recorded by the lockfile so clean installs can resolve it. Keep the host app's React and React DOM versions aligned; add them only if absent. Installing the skill alone does not install the kit.
+The script copies the static catalog into `.telos/design-system-preview`, copies the entire theme folder to the catalog's `theme/` directory, and adds that generated preview path to `.gitignore`. It refuses to replace an unmarked directory, never changes the installed kit or source theme, and preserves relative asset paths.
 
-## Open the downloaded Telos design system
+Serve the generated preview on loopback with Python 3 (or an existing static server):
 
-The kit includes a prebuilt Storybook at `dist/storybook` with the maintained Telos kit component stories, foundations, branding, controls, and light/dark themes. Use this catalog directly; do not initialize a replacement Storybook or generate a two-story showcase and call it the Telos design system. The catalog is built from the same sources as the release and requires no private repository or Storybook build dependencies in the consuming app.
+```sh
+python3 -m http.server 6006 --bind 127.0.0.1 --directory .telos/design-system-preview
+```
 
-1. Locate the installed package via its exported `package.json` (for example, `node -p "require.resolve('@telosplatforms/ai-kit/package.json')"`). Check that its sibling `dist/storybook/index.html` and `index.json` exist. If absent, obtain a verified catalog-bearing release or supplied tarball; mark catalog setup incomplete instead of synthesizing one.
-2. Serve that `dist/storybook` directory on loopback with an available static HTTP server. For a standard npm install and Python 3:
-
-   ```sh
-   python3 -m http.server 6006 --bind 127.0.0.1 --directory node_modules/@telosplatforms/ai-kit/dist/storybook
-   ```
-
-   Resolve the actual package directory for other layouts. Reuse an existing server only if it serves this catalog; use a free port if 6006 belongs to another app. Preserve the consuming project's own Storybook and stories.
-3. Read the served `index.json` and find the `Kit/Overview` / `All Components` story. Open its direct URL, normally `http://127.0.0.1:6006/?path=/story/kit-overview--all-components`. Never hand off a saved `/settings/guide` or onboarding URL.
-4. Verify in the browser that the overview and a component's individual story render with Telos styles, that the catalog sidebar contains the component families, and that the light/dark toolbar works. An HTTP 200 or a ready server message alone is insufficient. If browser verification is unavailable, report that limitation.
-5. Leave the static server running and share the verified direct catalog link. Then continue with the theme choice and authentication next step in the skill workflow. A preview theme toggle does not replace recording the patron's chosen app theme.
+Open `http://127.0.0.1:6006/?path=/story/kit-overview--all-components`. Check representative components in light and dark mode and verify the project stylesheet is loaded. After each theme edit, run the preparation script again and reload the catalog; review changes against the project source theme. The catalog's default is neutral when no project theme exists.
 
 ## Imports and composition
 
-Inspect the accessible version's exports and peer dependencies. Version 0.1.1 supports React 18.2 or 19, React DOM, and `next-themes`. `next-themes` does not require Next.js; retain Vite for new frontends unless otherwise chosen.
+Version 0.2.0 supports React 18.2 or 19, React DOM, and `next-themes`. `next-themes` does not require Next.js; retain Vite for new frontends unless otherwise chosen.
 
-Version 0.1.1 defines these entrypoints:
+Version 0.2.0 defines these entrypoints:
 
 ```tsx
 import "@telosplatforms/ai-kit/tokens.css";
@@ -77,6 +79,6 @@ Useful exports include `Button`, `Input`, `FormField`, `Conversation`, `Conversa
 
 - Prefer kit components. Compose atoms → molecules → organisms; keep auth, router, React Query, and API calls in containers.
 - Load tokens before component styles, then app token overrides. Preserve light/dark contrast and focus states.
-- Current `BrandProvider` supports `telos` and `basic`, not arbitrary brand names. Customize through the installed release's CSS variables instead of inventing props.
+- Theme identity belongs to the project stylesheet. The kit exposes no fixed brand registry or Telos preset.
 - Prebuilt `kit.css` styles kit components. App-authored Tailwind utilities can use the current `designSystemTailwindTheme` export from `@telosplatforms/ai-kit/tailwind`; inspect the version and merge with existing configuration.
 - Check layout, keyboard use, empty/loading/error states, and streaming text. Build with the actual artifact in the consuming app; an example alone does not prove package readiness.
