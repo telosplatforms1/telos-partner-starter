@@ -23,6 +23,12 @@ npm install @telosplatforms/ai-kit@0.1.0 next-themes
 Keep the host app’s React and React DOM versions aligned. Add those dependencies
 only if the project does not already provide them.
 
+## Start Storybook after installation
+
+Once the design system is installed, run the consuming project's Storybook development script with its package manager. Reuse an existing running instance. If Storybook is not configured, set it up for the project's framework with a minimal story using the installed kit, its styles, and theme provider; installing the kit alone does not supply a Storybook server. Respect the patron's selected light/dark theme in the preview once chosen.
+
+Verify that Storybook starts and serves the preview, leave it running, and share the actual local URL. If startup fails, report the concrete blocker without claiming it is running. Then guide the patron through the theme choice and authentication next step in the skill workflow.
+
 ## Imports and composition
 
 Inspect the accessible version's exports and peer dependencies. Version 0.1.0 supports React 18.2 or 19, React DOM, and `next-themes`. `next-themes` does not require Next.js; retain Vite for new frontends unless otherwise chosen.
