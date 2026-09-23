@@ -33,7 +33,11 @@ Your app also has an authenticated session, established by managed signup/login 
 
 ## Developer key and user mapping
 
-Have the developer create a key in Telos with the scopes needed. Key management requires a developer session, not the key being managed. A frontend-only project needs server routes or functions for secret-bearing calls, implemented in its chosen backend language.
+Before presenting working signup/login or another developer-key integration, check configuration in the actual backend runtime without printing secret values. A frontend-only project needs server routes or functions for secret-bearing calls, implemented in its chosen backend language. An `.env.example`, frontend dev server, or passing build does not establish that the backend has credentials.
+
+If the key is missing, explicitly share a clickable [Create a Telos API key](https://app.telosplatforms.com/developer/api-keys) link in your message to the developer; use the configured Telos origin for other environments. Explain that they should sign in with their Telos developer account, select the intended workspace, and create a key with the required scopes. This is the app builder's backend credential; people signing up for the app do not need their own API keys. Have the developer store it as `TELOS_API_KEY` through the project's private server configuration. State the exact local configuration path or deployment secret setting and required scopes beside the link; never ask for the value in chat. Key management requires a developer session, not the key being managed. Continue independent implementation while configuration is pending, but report authentication as **awaiting configuration**, not complete.
+
+Wire the backend's environment loader or secret injection into its actual start command. For a Vite app, loading frontend environment variables does not configure a separate backend process. Create any required app-session secret securely in private configuration, preserve existing secrets, keep local secret files ignored by Git, and restart/reload the backend after configuration changes. Recheck presence from that runtime, not just from the assistant's shell.
 
 Typical scopes: `users:write`, `chatkit:message`, `chatkit:session:read`; add `chatkit:upload` for files and `chatkit:action:approve` for action decisions. Confirm the live contract and actual key scopes:
 
@@ -43,6 +47,8 @@ curl --fail-with-body "$TELOS_API_URL/api/chatkit/auth-check" \
 ```
 
 Throughout these references, `TELOS_API_URL` is the verified API origin and `TELOS_API_KEY` is configured privately on the server. Shell examples are backend diagnostics, not frontend code.
+
+Run the auth check with the backend's configured origin and credential. Verify `authenticated`, workspace, and required scopes from the response; a successful key check does not prove signup/login works. Treat missing configuration, rejected credentials, insufficient scopes, and upstream failures distinctly. If configuration is missing, show an unavailable state and disable signup/login submission before collecting credentials; keep developer setup details in server diagnostics and the setup handoff rather than exposing environment-variable instructions to app users.
 
 Map each authenticated app user to a persistent external ID within the key's workspace. Provision that profile with `POST /api/users`; it creates/updates a profile, not a login account. Example test-user body:
 
@@ -71,6 +77,8 @@ Use for the user's selected Telos-managed path. Implement the UI, backend, and a
 |---|---|---|
 | `POST /api/auth/signup` | `auth:user:create` | User/workspace context; no login token |
 | `POST /api/auth/login` | `auth:user:login` | `access_token`, `token_type`, `expires_in`, and `user` |
+
+For this flow, configure `auth:user:create` and `auth:user:login`, plus `users:write` for the external-profile mapping below; confirm them against the target schema and key-check response. Complete the credential preflight above before asking the developer to try the form. Once configured, verify the real login/session/protected-route flow with authorized test credentials and signup only when account creation is authorized. Until then, distinguish implemented code and passing build checks from unverified live authentication.
 
 Signup request body:
 
