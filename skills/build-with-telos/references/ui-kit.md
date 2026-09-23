@@ -25,9 +25,13 @@ only if the project does not already provide them.
 
 ## Start Storybook after installation
 
-Once the design system is installed, run the consuming project's Storybook development script with its package manager. Reuse an existing running instance. If Storybook is not configured, set it up for the project's framework with a minimal story using the installed kit, its styles, and theme provider; installing the kit alone does not supply a Storybook server. Respect the patron's selected light/dark theme in the preview once chosen.
+The published kit supplies components and styles, not the Telos repository's Storybook catalog. Initialize Storybook for the consuming project's framework when absent, then finish the integration before handing it to the patron:
 
-Verify that Storybook starts and serves the preview, leave it running, and share the actual local URL. If startup fails, report the concrete blocker without claiming it is running. Then guide the patron through the theme choice and authentication next step in the skill workflow.
+1. Create or reuse stories under a clear `Telos` sidebar group that import real components from `@telosplatforms/ai-kit`. Include a design-system overview with representative controls and a chat example, using the installed exports and prop types. Preserve existing project stories; remove only untouched initializer demo stories and the generated “Configure your project” page when replacing that scaffold.
+2. Ensure `.storybook/main.*` includes the Telos story files. In `.storybook/preview.*`, import the kit tokens, component styles, and any chosen fonts, and wrap stories with the kit theme provider. Respect the patron's light/dark choice once selected. Follow the installed Storybook version's [configuration guidance](https://storybook.js.org/docs/configure).
+3. Start the project's Storybook development script with its package manager, or reuse its running instance. Read the generated story index to confirm the Telos stories are registered and obtain the overview's actual story ID.
+4. Open the direct Telos overview URL and verify in the browser that real kit components render with styles, with no preview import/runtime errors. Also check the chat example. An HTTP 200, a ready server message, or the default Storybook setup page alone is insufficient. If browser verification is unavailable, report that limitation instead of claiming the preview is verified.
+5. Leave Storybook running and share the verified direct Telos overview link, not a bare server URL that may reopen the setup page. If setup or rendering fails, fix it or report the concrete blocker before calling design-system setup complete. Then continue with the theme choice and authentication next step in the skill workflow.
 
 ## Imports and composition
 
