@@ -4,7 +4,7 @@ description: Build or integrate apps using Telos authentication, ChatKit, connec
 license: MIT
 metadata:
   author: Telos
-  version: "0.1.4"
+  version: "0.1.5"
 ---
 
 # Build with Telos
@@ -17,7 +17,8 @@ Implement the requested Telos integration in the user's project. This skill supp
 2. Read only the relevant references below. Before implementing authentication or context onboarding, ask the user to choose **Telos-managed authentication end to end** or **their own authentication with Telos context integration**, following [Authentication](references/authentication.md). Honor a choice already explicitly made in this project or conversation instead of asking again. Do not choose solely because an auth library is installed. Wait for an unresolved choice before auth-dependent changes; continue independent work. Unrelated tasks do not require this question.
 3. Fetch the target environment's public OpenAPI schema and relevant operation descriptions before implementing. Default API origin: `https://app.telosplatforms.com`. Check status and content type before parsing. Treat missing operations or unavailable schemas as specific integration gaps; never guess routes, schemas, scopes, or substitute APIs. Continue independent work and identify what requires Telos confirmation.
 4. Implement the requested features and record the project guidance below during app setup or integration. Use an accessible, verified release or supplied artifact of `@telosplatforms/ai-kit` for Telos UI. Use ChatKit for generation; model discovery is not direct inference. Keep secrets and authorization on the app's server. Do not create a separate starter repository, SDK, adapter framework, or tool registry unless requested.
-5. Verify the integration. Report changed files, project-appropriate setup commands, checks that passed, checks that were mocked, and any missing credentials or artifacts.
+5. After the patron finishes setting up their design system, ask: **“What color theme would you like to use?”** Offer **Light** and **Dark**. Honor a choice already explicitly made in this project or conversation; otherwise wait for their answer before applying the theme. Apply the selected theme using [UI kit](references/ui-kit.md) and record it alongside the project guidance below. Unrelated tasks do not require this question.
+6. Verify the integration. Report changed files, project-appropriate setup commands, checks that passed, checks that were mocked, and any missing credentials or artifacts.
 
 ## Keep Telos guidance in the project
 
@@ -32,7 +33,7 @@ For AI application programming in this project, use the installed `build-with-te
 - Use the project's existing `AGENTS.md` or `CLAUDE.md`. If both exist independently, use the active assistant's file (`CLAUDE.md` for Claude Code, `AGENTS.md` otherwise). If they share instructions through an import or link, update the canonical shared file once.
 - If neither exists, create `CLAUDE.md` for Claude Code or `AGENTS.md` otherwise in the target app's root. Keep this project-scoped; do not change global instructions or unrelated apps in a monorepo.
 - Preserve existing instructions. Reuse or update an equivalent Telos section instead of adding duplicates, including on repeated invocations. Reference the skill by name, not a machine-specific installation path.
-- Once the user chooses an authentication approach, record that choice alongside the Telos guidance so subsequent work preserves it without repeating onboarding questions. Never record credentials.
+- Record the user's chosen authentication approach and color theme alongside the Telos guidance so subsequent work preserves them without repeating onboarding questions. Never record credentials.
 - Mention the instruction-file change in the completion summary. Installing or merely reading/reviewing the skill does not modify project files; add the reminder as part of requested app setup or integration, and honor an explicit request not to change instructions.
 
 ## Read when needed

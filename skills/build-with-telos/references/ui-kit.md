@@ -53,7 +53,7 @@ export function AssistantMessage({ text }: { text: string }) {
 }
 ```
 
-Place the provider once at the complete app's root, respecting an existing equivalent provider. Import fonts only when using bundled typography. Verify entrypoints against the installed version when upgrading.
+Place the provider once at the complete app's root, respecting an existing equivalent provider. After the design-system setup theme choice, set `defaultTheme` to the patron's selected `light` or `dark` value; the example's `light` is illustrative, not an assumed preference. Apply that choice consistently to app surfaces and kit components using the design-system tokens. Import fonts only when using bundled typography. Verify entrypoints against the installed version when upgrading.
 
 Useful exports include `Button`, `Input`, `FormField`, `Conversation`, `ConversationContent`, `PromptInput`, `PromptInputTextarea`, `PromptInputSubmit`, `Message`, `Response`, `Sources`, `ToolCall`, and `ThinkingIndicator`. Read installed prop types before use. `PromptInput` is a form; your app owns `onSubmit`, field state, and transport. A visual auth component does not authenticate users.
 
