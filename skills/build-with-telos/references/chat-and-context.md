@@ -2,9 +2,15 @@
 
 Use the target deployment's [chat schema](https://app.telosplatforms.com/api/public/openapi/chat.json) and [chat guide](https://app.telosplatforms.com/developers/chat). Complete [authentication and user mapping](authentication.md) first.
 
+## Choose the chat model
+
+Before configuring generation, ask **“Which model would you like to use for your app’s chat?”** unless the user has already explicitly chosen one in the project or conversation. Present only options supported for ChatKit inference by the target deployment's current public contract, with documented descriptions where available. If it exposes only `model_key` tiers such as `easy`, `base`, `hard`, or `research`, explain that these are Telos-managed tiers and ask which tier to use; do not invent their underlying model names. Model catalogue listings alone do not establish inference access.
+
+Wait for an unresolved choice before setting the model or making model-dependent calls; continue independent chat UI work. If a requested named model is unavailable or requires an undocumented override, explain the limitation and ask the user to select a supported option. Do not silently select `base` or substitute another model. Apply the confirmed selection to the server-side ChatKit request and record it in the project's instructions so later work preserves it.
+
 ## Send a turn
 
-Your server resolves the authenticated app user's external ID, then calls `POST /api/chatkit/message` with a developer key carrying `chatkit:message`. Start with `surface: "core"`. Save this example as `message.json`:
+Your server resolves the authenticated app user's external ID, then calls `POST /api/chatkit/message` with a developer key carrying `chatkit:message`. Start with `surface: "core"`. For a confirmed tier selection, save this example as `message.json` and replace the `model_key` placeholder with the user's selected supported value before sending:
 
 ```json
 {
@@ -13,7 +19,7 @@ Your server resolves the authenticated app user's external ID, then calls `POST 
   "payload": {
     "query": "Help me draft a project update.",
     "stream": false,
-    "model_key": "base"
+    "model_key": "<user-selected-model-key>"
   }
 }
 ```
