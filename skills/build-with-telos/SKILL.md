@@ -4,7 +4,7 @@ description: Build or integrate apps using Telos authentication, ChatKit, connec
 license: MIT
 metadata:
   author: Telos
-  version: "0.2.0"
+  version: "0.2.1"
 ---
 
 # Build with Telos
@@ -20,7 +20,8 @@ Implement the requested Telos integration in the user's project. This skill supp
 5. Inspect the app's existing theme or supplied brand guide. If important choices are unresolved, ask for brand/accent colors, typography, overall style, and light/dark/system preference. Honor choices already provided; don't repeat answered questions. Create or update a project-owned theme folder, defaulting to `src/theme/theme.css`, plus local assets as needed. Preserve app structure and existing customer styles.
 6. Import the theme stylesheet after kit tokens and kit styles in the app entry point. Use the skill's `scripts/prepare-design-system-preview.mjs` to copy the installed catalog to `.telos/design-system-preview` and copy the complete customer theme folder into its `theme` directory. This script may replace that marker-owned generated preview only; it must not alter the installed package or source theme. It also ensures the generated preview directory is ignored by Git. Serve this prepared directory on loopback, verify and open the `Kit/Overview` / `All Components` page, then review representative components in light and dark modes. After each theme revision, prepare the catalog again and reload it. Preserve the source theme and refine it conversationally.
 7. Record the theme location, design choices, color-mode preference, and working preview command in the project instructions. Then continue with authentication as described in step 2. If authentication is already implemented, preserve it and guide the patron to verify its integration.
-8. Verify the integration. Report changed files, project-appropriate setup commands, checks that passed, checks that were mocked, and any missing credentials or artifacts.
+8. After authentication is configured and its login/session/protected-route flow is verified, tell the patron: **“Next, build a chat page for your app.”** Guide them to a protected chat page using their existing Telos UI components and theme, following [Chat and context](references/chat-and-context.md). Start with a message list, composer, streamed replies, and loading/error states; verify the required ChatKit scopes and server-side user mapping. Continue implementation when chat is already part of the requested work; otherwise offer this as the next step. Preserve an existing chat page and guide verification or improvements instead of rebuilding it. If auth is awaiting configuration or live verification, resolve that first rather than presenting it as finished.
+9. Verify the integration. Report changed files, project-appropriate setup commands, checks that passed, checks that were mocked, and any missing credentials or artifacts.
 
 ## Keep Telos guidance in the project
 
