@@ -4,9 +4,9 @@ Use the target deployment's [chat schema](https://app.telosplatforms.com/api/pub
 
 ## Choose the chat model
 
-Before configuring generation, ask **“Which model would you like to use for your app’s chat?”** unless the user has already explicitly chosen one in the project or conversation. Present only options supported for ChatKit inference by the target deployment's current public contract, with documented descriptions where available. If it exposes only `model_key` tiers such as `easy`, `base`, `hard`, or `research`, explain that these are Telos-managed tiers and ask which tier to use; do not invent their underlying model names. Model catalogue listings alone do not establish inference access.
+Before configuring generation, ask **“Which model would you like to use for your app’s chat?”** unless the user has already explicitly chosen one in the project or conversation. Read the target deployment's current chat contract, then discover models through `GET /api/models` (follow documented pagination). Use advertised capabilities to avoid offering incompatible models; missing capability metadata is unknown, not proof that a model is unavailable. For deployments supporting catalogue selection, use the chosen entry's `id` in `payload.model`; Telos resolves its provider and concrete model. Present current catalogue names and documented descriptions, not a hardcoded model list. Catalogue selection does not require enabling `LLM_ALLOW_CLIENT_MODEL_OVERRIDE`; provider credentials, usage limits, and input capabilities still apply.
 
-Wait for an unresolved choice before setting the model or making model-dependent calls; continue independent chat UI work. If a requested named model is unavailable or requires an undocumented override, explain the limitation and ask the user to select a supported option. Do not silently select `base` or substitute another model. Apply the confirmed selection to the server-side ChatKit request and record it in the project's instructions so later work preserves it.
+Wait for an unresolved choice before setting the model or making model-dependent calls; continue independent chat UI work. Honor a named model already requested. If unavailable, report the reason and ask how to proceed; do not silently choose `base` or substitute another model. If the deployed contract still says `payload.model` is ignored unless overrides are enabled, that deployment needs the catalogue-selection backend update. Report the deployment gap before changing the app's model setting; changing the customer app's environment variables cannot enable hosted routing. Do not try other payload shapes or enable broad overrides as a workaround.
 
 The user may explicitly choose **automatic routing** when supported by the deployment. This means omitting the model-selection fields and letting Telos choose a tier per turn; it is a recorded choice, not an assumed default.
 
@@ -17,8 +17,8 @@ For `POST /api/chatkit/message` with `surface: "core"`, the normal generation pa
 ```text
 external_user_id + API key workspace
   → resolved app user and workspace LLM configuration
-  → configured provider + requested or automatically selected tier
-  → workspace/deployment mapping to a concrete model
+  → explicit catalogue id: select its provider + concrete model
+    OR no catalogue id: configured provider + explicit/automatic tier mapping
   → generated response and optional resolved-model metadata
 ```
 
@@ -35,13 +35,21 @@ These are routing roles, not fixed provider model IDs, prices, or capability gua
 
 In ordinary core-chat generation, a valid explicit `model_key` overrides automatic tier selection. With it omitted, the current normal policy considers research requests/deep-research routes first, then the request router's recommended tier, then `hard` for substantial tool use or `base` for ordinary/lightweight work. Recheck the target deployment's [routing guide](https://app.telosplatforms.com/developers/chat#automatic-model-selection) before relying on that ordering. A tier choice does not pin every internal call: routing helpers, image handling, recovery, and action continuations can use separate server policies. `agent_id` selects an agent persona and `session_id` continues a conversation; neither is a model identifier.
 
-`payload.model` requests a concrete model override. It is ignored by default and can take precedence over the tier's model mapping only when the deployment/workspace enables client overrides and accepts that model. Do not use a catalogue ID as `model_key`, infer override access from catalogue visibility, or add a provider-specific inference endpoint. If exact-model selection is unavailable, explain that the app can select a tier and ask the user how to proceed.
+`payload.model` selects an exact catalogue model for core chat and takes precedence over `model_key`. Omit `payload.provider`: the catalogue entry owns the provider. Send the entry's `id`, not its raw provider `model` value or display name. Never place a catalogue ID in `model_key`. Invalid IDs or models without chat support return a typed selection error; unavailable credentials or unsupported input must not trigger a substitute model. Keep the same ChatKit endpoint and authentication. Preparation helpers and action continuations can use separate policies; this setting selects the normal chat reply model.
 
 ### Change the model in an existing app
 
-1. Read the recorded choice and locate the existing server-side ChatKit request builder and model setting. Verify the target deployment's supported selection fields and the user's requested change. A direct request to switch models is the choice; do not ask for it again when supported.
+1. Read the recorded choice and locate the existing server-side ChatKit request builder and model setting. Verify the deployed chat contract supports catalogue selection and resolve the requested name against the current catalogue. A direct request to switch models is the choice; do not ask for it again. Ask only when multiple catalogue entries leave the selection ambiguous.
 2. Update that existing setting and use it for every normal message request, including later turns with `session_id`. Do not assume the session persists the model preference. Keep user/session identity, conversation history, streaming, and authentication intact.
-3. For a confirmed tier, assign the validated value and remove any stale concrete-model override:
+3. For a named catalogue model, assign its validated id and remove superseded tier/provider settings:
+
+   ```js
+   payload.model = selectedCatalogueEntry.id;
+   delete payload.model_key;
+   delete payload.provider;
+   ```
+
+   For a confirmed tier, assign the validated value and remove any stale concrete-model selection:
 
    ```js
    payload.model_key = selectedTier;
@@ -55,13 +63,14 @@ In ordinary core-chat generation, a valid explicit `model_key` overrides automat
    delete payload.model;
    ```
 
-   For an authorized concrete-model override, use `payload.model` only as documented by the target deployment and remove a superseded tier setting unless its contract requires one. Validate any selection received from the browser on the app's server.
-4. Inspect the outgoing request and, with authorized credentials, verify a turn. The documented JSON response may include `model_key` and `model_used`; compare them with the requested selection when present. For streams, inspect only model metadata actually provided by the documented event format. If metadata is absent, report that exact resolution is unconfirmed; a successful response alone does not prove an override took effect.
-5. Update the project instructions with the chosen tier, automatic mode, or concrete model, plus its configuration location. This lets the next coding agent change one existing setting instead of scattering model IDs through components.
+   Validate any selection received from the browser on the app's server.
+4. Inspect the outgoing request and, with authorized credentials, verify a turn. Compare JSON `model_used` with the selected catalogue entry's **`model`**, not its **`id`**; these identifiers differ. For tiers, compare `model_key` and inspect `model_used` without assuming a fixed mapping. For streams, inspect only metadata actually documented in the event format. If metadata is absent, report resolution as unconfirmed.
+5. **Stop on a mismatch or selection error.** Report the requested catalogue id, expected provider model, and actual `model_used` or typed error. Do not try arbitrary payload shapes, repeatedly probe paid inference, substitute a tier, or claim the switch succeeded because the request contains the desired ID. Restore only your own unsuccessful trial setting when needed, preserving customer edits; record the requested choice as pending until the deployment issue is resolved.
+6. Record the selection, server-side configuration location, and verification status in project instructions. Say whether the model is confirmed, unverified, or blocked. This lets the next agent update one existing setting without scattering IDs through components.
 
 ## Send a turn
 
-Your server resolves the authenticated app user's external ID, then calls `POST /api/chatkit/message` with a developer key carrying `chatkit:message`. Start with `surface: "core"`. For a confirmed tier selection, save this example as `message.json` and replace the `model_key` placeholder with the user's selected supported value before sending:
+Your server resolves the authenticated app user's external ID, then calls `POST /api/chatkit/message` with a developer key carrying `chatkit:message`. Start with `surface: "core"`. Save this example as `message.json` and replace `model` with the user's chosen catalogue id before sending. For a tier choice, replace that field with `model_key` and the confirmed tier; for automatic routing, omit both:
 
 ```json
 {
@@ -70,7 +79,7 @@ Your server resolves the authenticated app user's external ID, then calls `POST 
   "payload": {
     "query": "Help me draft a project update.",
     "stream": false,
-    "model_key": "<user-selected-model-key>"
+    "model": "<user-selected-catalogue-id>"
   }
 }
 ```
