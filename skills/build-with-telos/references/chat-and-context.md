@@ -8,6 +8,57 @@ Before configuring generation, ask **“Which model would you like to use for yo
 
 Wait for an unresolved choice before setting the model or making model-dependent calls; continue independent chat UI work. If a requested named model is unavailable or requires an undocumented override, explain the limitation and ask the user to select a supported option. Do not silently select `base` or substitute another model. Apply the confirmed selection to the server-side ChatKit request and record it in the project's instructions so later work preserves it.
 
+The user may explicitly choose **automatic routing** when supported by the deployment. This means omitting the model-selection fields and letting Telos choose a tier per turn; it is a recorded choice, not an assumed default.
+
+## How model routing works
+
+For `POST /api/chatkit/message` with `surface: "core"`, the normal generation path is:
+
+```text
+external_user_id + API key workspace
+  → resolved app user and workspace LLM configuration
+  → configured provider + requested or automatically selected tier
+  → workspace/deployment mapping to a concrete model
+  → generated response and optional resolved-model metadata
+```
+
+`payload.model_key` is a stable tier selector. Its intended uses are:
+
+| Tier | Intended work |
+|---|---|
+| `easy` | Simple transformations such as rewriting or summarizing |
+| `base` | General chat and generation |
+| `hard` | Complex reasoning and substantial tool use |
+| `research` | Research-heavy work and long-context synthesis |
+
+These are routing roles, not fixed provider model IDs, prices, or capability guarantees. Workspace policy can map multiple tiers to the same model. For the selected provider and tier, a configured workspace mapping takes precedence over deployment model settings; otherwise provider-specific assignments, shared assignments, and deployment defaults apply. The provider is also resolved through workspace configuration. Setting a provider name or an `LLM_MODEL_*` variable in the customer app does not reconfigure hosted Telos. Changing which concrete model a tier maps to requires an authorized, supported Telos workspace or deployment configuration change.
+
+In ordinary core-chat generation, a valid explicit `model_key` overrides automatic tier selection. With it omitted, the current normal policy considers research requests/deep-research routes first, then the request router's recommended tier, then `hard` for substantial tool use or `base` for ordinary/lightweight work. Recheck the target deployment's [routing guide](https://app.telosplatforms.com/developers/chat#automatic-model-selection) before relying on that ordering. A tier choice does not pin every internal call: routing helpers, image handling, recovery, and action continuations can use separate server policies. `agent_id` selects an agent persona and `session_id` continues a conversation; neither is a model identifier.
+
+`payload.model` requests a concrete model override. It is ignored by default and can take precedence over the tier's model mapping only when the deployment/workspace enables client overrides and accepts that model. Do not use a catalogue ID as `model_key`, infer override access from catalogue visibility, or add a provider-specific inference endpoint. If exact-model selection is unavailable, explain that the app can select a tier and ask the user how to proceed.
+
+### Change the model in an existing app
+
+1. Read the recorded choice and locate the existing server-side ChatKit request builder and model setting. Verify the target deployment's supported selection fields and the user's requested change. A direct request to switch models is the choice; do not ask for it again when supported.
+2. Update that existing setting and use it for every normal message request, including later turns with `session_id`. Do not assume the session persists the model preference. Keep user/session identity, conversation history, streaming, and authentication intact.
+3. For a confirmed tier, assign the validated value and remove any stale concrete-model override:
+
+   ```js
+   payload.model_key = selectedTier;
+   delete payload.model;
+   ```
+
+   For a confirmed automatic-routing choice, omit both selection fields; `"auto"` is not a documented tier:
+
+   ```js
+   delete payload.model_key;
+   delete payload.model;
+   ```
+
+   For an authorized concrete-model override, use `payload.model` only as documented by the target deployment and remove a superseded tier setting unless its contract requires one. Validate any selection received from the browser on the app's server.
+4. Inspect the outgoing request and, with authorized credentials, verify a turn. The documented JSON response may include `model_key` and `model_used`; compare them with the requested selection when present. For streams, inspect only model metadata actually provided by the documented event format. If metadata is absent, report that exact resolution is unconfirmed; a successful response alone does not prove an override took effect.
+5. Update the project instructions with the chosen tier, automatic mode, or concrete model, plus its configuration location. This lets the next coding agent change one existing setting instead of scattering model IDs through components.
+
 ## Send a turn
 
 Your server resolves the authenticated app user's external ID, then calls `POST /api/chatkit/message` with a developer key carrying `chatkit:message`. Start with `surface: "core"`. For a confirmed tier selection, save this example as `message.json` and replace the `model_key` placeholder with the user's selected supported value before sending:
@@ -32,7 +83,7 @@ curl --fail-with-body "$TELOS_API_URL/api/chatkit/message" \
 
 The JSON result includes `response` text and may include `session_id`, `citations`, and `pending_action`. Handle optional/nullable fields. Bind returned session IDs to the authenticated user and send `payload.session_id` on continuation. Do not fabricate a session ID when none was returned.
 
-`model_key` selects documented tiers `easy`, `base`, `hard`, or `research`. Do not substitute catalogue IDs or assume an OpenAI-compatible `/v1/chat/completions` endpoint. Raw `payload.model` overrides are deployment-gated. Do not invent unrestricted `system` or `system_message` fields. Use a saved agent only where creation/selection is documented and authorized.
+Apply the [model routing guidance](#how-model-routing-works) to the request. Do not invent unrestricted `system` or `system_message` fields. Use a saved agent only where creation/selection is documented and authorized.
 
 ## Stream through the app's server
 

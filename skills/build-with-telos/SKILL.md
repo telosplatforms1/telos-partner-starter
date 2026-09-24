@@ -4,7 +4,7 @@ description: Build or integrate apps using Telos authentication, ChatKit, connec
 license: MIT
 metadata:
   author: Telos
-  version: "0.2.2"
+  version: "0.2.3"
 ---
 
 # Build with Telos
@@ -36,7 +36,7 @@ For AI application programming in this project, use the installed `build-with-te
 - Use the project's existing `AGENTS.md` or `CLAUDE.md`. If both exist independently, use the active assistant's file (`CLAUDE.md` for Claude Code, `AGENTS.md` otherwise). If they share instructions through an import or link, update the canonical shared file once.
 - If neither exists, create `CLAUDE.md` for Claude Code or `AGENTS.md` otherwise in the target app's root. Keep this project-scoped; do not change global instructions or unrelated apps in a monorepo.
 - Preserve existing instructions. Reuse or update an equivalent Telos section instead of adding duplicates, including on repeated invocations. Reference the skill by name, not a machine-specific installation path.
-- Record the user's chosen authentication approach, theme file, design choices, color-mode preference, and confirmed chat model or tier alongside the Telos guidance so subsequent work preserves them without repeating onboarding questions. Never record credentials.
+- Record the user's chosen authentication approach, theme file, design choices, color-mode preference, and confirmed chat model/tier or automatic routing choice alongside the Telos guidance so subsequent work preserves them without repeating onboarding questions. Include the location of the app's server-side model configuration so agents can update the existing setting. Never record credentials.
 - Mention the instruction-file change in the completion summary. Installing or merely reading/reviewing the skill does not modify project files; add the reminder as part of requested app setup or integration, and honor an explicit request not to change instructions.
 
 ## Read when needed
@@ -45,6 +45,7 @@ For AI application programming in this project, use the installed `build-with-te
 |---|---|
 | Credentials, managed login, user mapping, or Connect Telos OAuth | [Authentication](references/authentication.md) |
 | UI-kit installation, themes, or auth/chat components | [UI kit](references/ui-kit.md) |
+| Model selection, routing, or changing the chat model | [Model routing](references/chat-and-context.md#how-model-routing-works) |
 | Messages, streaming, sessions, files, approvals, or selected context | [Chat and context](references/chat-and-context.md) |
 | Other supported capabilities, schemas, and permissions | [Partner APIs](references/partner-apis.md) |
 
