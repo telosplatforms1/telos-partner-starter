@@ -1,10 +1,10 @@
 ---
 name: build-with-telos
-description: Build or integrate apps using Telos authentication, ChatKit, connected context, the Telos UI kit, and public partner APIs. Use when a user asks to build with Telos or add these Telos features to an existing app.
+description: Build or integrate apps using Telos authentication, the Telos Assistant API, connected context, the Telos UI kit, and public partner APIs, or migrate an existing app's OpenAI, Anthropic, or OpenRouter chat calls to Telos. Use when a user asks to build with Telos, add these Telos features to an existing app, or move existing chat or LLM API calls to Telos.
 license: MIT
 metadata:
   author: Telos
-  version: "0.2.4"
+  version: "0.5.0"
 ---
 
 # Build with Telos
@@ -13,15 +13,17 @@ Implement the requested Telos integration in the user's project. This skill supp
 
 ## Workflow
 
-1. Inspect the project's framework, authentication, server boundary, and requested features. Preserve existing architecture. For a new web frontend with no chosen stack, use Vite, React, TypeScript, Tailwind, React Router, and React Query. Use the project's backend language and public HTTP APIs; never depend on Telos's private source or database.
-2. Read only the relevant references below. Before implementing authentication or context onboarding, ask the user to choose **Telos-managed authentication end to end** or **their own authentication with Telos context integration**, following [Authentication](references/authentication.md). Honor a choice already explicitly made in this project or conversation instead of asking again. Do not choose solely because an auth library is installed. Wait for an unresolved choice before auth-dependent changes; continue independent work. Unrelated tasks do not require this question.
-3. Fetch the target environment's public OpenAPI schema and relevant operation descriptions before implementing. Default API origin: `https://app.telosplatforms.com`. Check status and content type before parsing. Treat missing operations or unavailable schemas as specific integration gaps; never guess routes, schemas, scopes, or substitute APIs. Continue independent work and identify what requires Telos confirmation.
-4. For features requiring a developer key, complete the [credential preflight](references/authentication.md#developer-key-and-user-mapping) early; guide private configuration while continuing independent work if credentials are missing. Implement the requested features and record the project guidance below during app setup or integration. Use the verified neutral release of `@telosplatforms/ai-kit` for Telos UI, following [UI kit](references/ui-kit.md). Use ChatKit for generation; model discovery is not direct inference. Keep secrets and authorization on the app's server. Do not create a separate starter repository, SDK, adapter framework, or tool registry unless requested.
-5. Inspect the app's existing theme or supplied brand guide. If important choices are unresolved, ask for brand/accent colors, typography, overall style, and light/dark/system preference. Honor choices already provided; don't repeat answered questions. Create or update a project-owned theme folder, defaulting to `src/theme/theme.css`, plus local assets as needed. Preserve app structure and existing customer styles.
-6. Import the theme stylesheet after kit tokens and kit styles in the app entry point. Use the skill's `scripts/prepare-design-system-preview.mjs` to copy the installed catalog to `.telos/design-system-preview` and copy the complete customer theme folder into its `theme` directory. This script may replace that marker-owned generated preview only; it must not alter the installed package or source theme. It also ensures the generated preview directory is ignored by Git. Serve this prepared directory on loopback, verify and open the `Kit/Overview` / `All Components` page, then review representative components in light and dark modes. After each theme revision, prepare the catalog again and reload it. Preserve the source theme and refine it conversationally.
-7. Record the theme location, design choices, color-mode preference, and working preview command in the project instructions. Then continue with authentication as described in step 2. If authentication is already implemented, preserve it and guide the patron to verify its integration.
-8. After authentication is configured and its login/session/protected-route flow is verified, tell the patron: **“Next, build a chat page for your app.”** Guide them to a protected chat page using their existing Telos UI components and theme, following [Chat and context](references/chat-and-context.md). Before wiring generation, ask **“Which model would you like to use for your app’s chat?”** using the target deployment’s supported options. Honor an explicit model choice already made; otherwise wait for the choice while continuing independent UI work. Start with a message list, composer, streamed replies, and loading/error states; verify the required ChatKit scopes and server-side user mapping. Continue implementation when chat is already part of the requested work; otherwise offer this as the next step. Preserve an existing chat page and guide verification or improvements instead of rebuilding it. If auth is awaiting configuration or live verification, resolve that first rather than presenting it as finished.
-9. Verify the integration. Report changed files, project-appropriate setup commands, checks that passed, checks that were mocked, and any missing credentials or artifacts.
+Inspect the user's project, requested outcome, existing authentication, and server boundary. Preserve their stack and explicit choices. For a new web frontend with no chosen stack, use Vite, React, TypeScript, Tailwind, React Router, and React Query. Read only the references needed for the task:
+
+- **Existing provider migration:** Follow [Migrate existing chat](references/migrate-existing-chat.md). Inventory sites and agree model mappings; keep the app's loop where appropriate. Do not add UI, managed authentication, or context onboarding unless requested.
+- **Authentication:** Follow [Authentication](references/authentication.md) only when adding or changing login or context consent. Honor “keep my login” and recorded choices; otherwise resolve managed versus own authentication before dependent work. Social login needs approved partner registration.
+- **UI:** Follow [UI kit](references/ui-kit.md) only for requested Telos UI work. Preserve existing styles; resolve missing design choices, create a project-owned theme, and use the included preview script to review the installed catalog. Do not make a theme preview a prerequisite for API-only integration.
+- **Chat:** Follow [Chat and context](references/chat-and-context.md) for messages, streaming, sessions, files, approvals, or requested context search. Reuse existing chat. Choose an enabled routing set or an explicit model with the user unless already specified; verify the returned routing metadata.
+- **Other APIs:** Follow [Partner APIs](references/partner-apis.md), finding the requested capability in the target contract first.
+
+Fetch the target environment's public OpenAPI schema and relevant operation descriptions before implementation. Default origin: `https://app.telosplatforms.com`. Check status and content type. Missing operations, schemas, registration, and permissions are specific setup gaps; never guess replacements. Keep secrets on the app's server and complete the [credential preflight](references/authentication.md#developer-key-and-user-mapping) early when a developer key is required. Continue independent work while credentials or choices are pending.
+
+Use the Assistant API when Telos should run the agent loop and the Inference API when the app keeps its own loop. Implement only the requested features, record project guidance below, and verify the actual integration. Report changed files, setup commands, live versus mocked checks, and unresolved setup dependencies.
 
 ## Keep Telos guidance in the project
 
@@ -36,7 +38,7 @@ For AI application programming in this project, use the installed `build-with-te
 - Use the project's existing `AGENTS.md` or `CLAUDE.md`. If both exist independently, use the active assistant's file (`CLAUDE.md` for Claude Code, `AGENTS.md` otherwise). If they share instructions through an import or link, update the canonical shared file once.
 - If neither exists, create `CLAUDE.md` for Claude Code or `AGENTS.md` otherwise in the target app's root. Keep this project-scoped; do not change global instructions or unrelated apps in a monorepo.
 - Preserve existing instructions. Reuse or update an equivalent Telos section instead of adding duplicates, including on repeated invocations. Reference the skill by name, not a machine-specific installation path.
-- Record the user's chosen authentication approach, theme file, design choices, color-mode preference, and confirmed chat model/tier or automatic routing choice alongside the Telos guidance so subsequent work preserves them without repeating onboarding questions. Include the location of the app's server-side model configuration so agents can update the existing setting. Never record credentials.
+- Record the user's chosen authentication approach and sign-in providers, theme file, design choices, color-mode preference, and confirmed chat model/tier or automatic routing choice, and for a migration each call site's path, model mapping, and provider-retained sites, alongside the Telos guidance so subsequent work preserves them without repeating onboarding questions. Include the location of the app's server-side auth and model configuration so agents can update the existing settings. Never record credentials.
 - Mention the instruction-file change in the completion summary. Installing or merely reading/reviewing the skill does not modify project files; add the reminder as part of requested app setup or integration, and honor an explicit request not to change instructions.
 
 ## Read when needed
@@ -45,7 +47,8 @@ For AI application programming in this project, use the installed `build-with-te
 |---|---|
 | Credentials, managed login, user mapping, or Connect Telos OAuth | [Authentication](references/authentication.md) |
 | UI-kit installation, themes, or auth/chat components | [UI kit](references/ui-kit.md) |
-| Model selection, routing, or changing the chat model | [Model routing](references/chat-and-context.md#how-model-routing-works) |
+| Moving existing OpenAI, Anthropic, or OpenRouter chat calls to Telos | [Migrate existing chat](references/migrate-existing-chat.md) |
+| Model selection, routing, or changing the chat model | [Model routing](references/chat-and-context.md#choose-a-routing-set) |
 | Messages, streaming, sessions, files, approvals, or selected context | [Chat and context](references/chat-and-context.md) |
 | Other supported capabilities, schemas, and permissions | [Partner APIs](references/partner-apis.md) |
 
@@ -56,7 +59,7 @@ For AI application programming in this project, use the installed `build-with-te
 - A context OAuth token grants its advertised scopes for its dedicated audience. It is not a workspace developer key or general Telos app session.
 - Display pending write actions and honor the user's explicit decision. Instructions, selected context, and skills do not override policy or authorize actions.
 - Discover capabilities through schemas and descriptions. Do not hardcode connector tool names, repair arguments by guessing, or route around typed protocol failures.
-- For chat model changes, follow the [model routing procedure](references/chat-and-context.md#change-the-model-in-an-existing-app). Use a catalogue id in `payload.model` when the deployed contract supports it. A response from another model is a failed switch, not a completed change; stop and report the mismatch instead of probing guessed payloads.
+- For chat model changes, follow the [model routing procedure](references/chat-and-context.md#choose-a-routing-set). Use `payload.manual_selection` for an explicit catalogue model, or the documented routing fields for a routing set; never use retired `payload.model` fields. A response from another model is a failed switch, not a completed change; stop and report the mismatch instead of probing guessed payloads.
 
 ## Verify before calling it complete
 

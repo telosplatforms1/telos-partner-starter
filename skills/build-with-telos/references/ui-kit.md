@@ -45,12 +45,11 @@ Open `http://127.0.0.1:6006/?path=/story/kit-overview--all-components`. Check re
 
 Version 0.2.0 supports React 18.2 or 19, React DOM, and `next-themes`. `next-themes` does not require Next.js; retain Vite for new frontends unless otherwise chosen.
 
-Version 0.2.0 defines these entrypoints:
+The pinned 0.2.0 release uses these entrypoints. Inspect the installed exports and release notes before changing versions. Keep custom fonts in the project theme.
 
 ```tsx
 import "@telosplatforms/ai-kit/tokens.css";
 import "@telosplatforms/ai-kit/kit.css";
-import "@telosplatforms/ai-kit/fonts.css";
 import {
   ThemeProvider,
   Message,
@@ -71,9 +70,9 @@ export function AssistantMessage({ text }: { text: string }) {
 }
 ```
 
-Place the provider once at the complete app's root, respecting an existing equivalent provider. After the design-system setup theme choice, set `defaultTheme` to the patron's selected `light` or `dark` value; the example's `light` is illustrative, not an assumed preference. Apply that choice consistently to app surfaces and kit components using the design-system tokens. Import fonts only when using bundled typography. Verify entrypoints against the installed version when upgrading.
+Place the provider once at the complete app's root, respecting an existing equivalent provider. After the design-system setup theme choice, set `defaultTheme` to the patron's selected `light` or `dark` value; the example's `light` is illustrative, not an assumed preference. Apply that choice consistently to app surfaces and kit components using the design-system tokens. Verify entrypoints against the installed version when upgrading.
 
-Useful exports include `Button`, `Input`, `FormField`, `Conversation`, `ConversationContent`, `PromptInput`, `PromptInputTextarea`, `PromptInputSubmit`, `Message`, `Response`, `Sources`, `ToolCall`, and `ThinkingIndicator`. Read installed prop types before use. `PromptInput` is a form; your app owns `onSubmit`, field state, and transport. A visual auth component does not authenticate users.
+Useful exports include `Button`, `Input`, `FormField`, `Conversation`, `ConversationContent`, `PromptInput`, `PromptInputTextarea`, `PromptInputSubmit`, `Message`, `Response`, `Sources`, `ToolCall`, and `ThinkingIndicator`. For full page layouts, `ChatLayout`/`ChatHeader`/`ChatThreadList`/`ChatWelcome` assemble a chat screen around those pieces, and `AuthLayout`/`AuthCard`/`AuthModeTabs`/`AuthProviderButton`/`AuthEmailForm` assemble a sign-up/sign-in screen. Read installed prop types before use. `PromptInput` is a form; your app owns `onSubmit`, field state, and transport. A visual auth component does not authenticate users -- `AuthProviderButton`/`AuthEmailForm` render the button and form only; your app's container owns the redirect, session, and validation.
 
 ## Styling and boundaries
 
