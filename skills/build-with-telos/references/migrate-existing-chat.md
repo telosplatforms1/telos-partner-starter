@@ -1,8 +1,10 @@
 # Migrate existing chat to Telos
 
-Use this path when the project already works and calls OpenAI, Anthropic, or OpenRouter for chat. The goal is to move those calls onto Telos with the smallest change that preserves behavior. It does not need the theme or chat-page onboarding, and it asks the authentication question only for call sites that move to the Assistant API.
+Use this path for existing apps and unfinished scaffolds that use OpenAI, Anthropic, OpenRouter, or another client implementing a supported protocol. Migrate the app with the smallest change that preserves its behavior. Keep its framework, login, UI, prompts, tools, history and deployment layout. The coding harness's inference provider is a separate setting; migrating an app does not authorize changing it.
 
-Fetch the target [public schema](partner-apis.md#read-authoritative-contracts) first and confirm `POST /v1/chat/completions`, `POST /v1/messages`, and `GET /v1/models` exist in it. Treat a missing operation as a gap to report, not something to emulate.
+Start by finding the existing client factory and server configuration. Reuse their base URL, credential and model settings instead of adding an SDK, adapter, provider registry or parallel chat implementation. If a scaffold has only placeholders, wire that intended path to Telos and complete only the missing pieces needed for the requested feature. Keep an existing backend or serverless route; add a server boundary only if secret-bearing calls currently run in the browser or none exists.
+
+Fetch the target [public schema](partner-apis.md#read-authoritative-contracts) and confirm `GET /v1/models` plus the protocol endpoint needed by each site (`POST /v1/chat/completions` or `POST /v1/messages`). An unused protocol is not a prerequisite. Treat a missing required operation as a gap to report, not something to emulate.
 
 ## 1. Inventory call sites
 
@@ -12,7 +14,7 @@ Search server and client code, config, and environment files for every place a c
 - Provider keys and base-URL settings in env files, deployment config, and secret stores.
 - Calls made from the browser. These must move behind the app's server before migration; never ship a Telos key to the client.
 
-Record each site: file, SDK or protocol, model id, and which features it uses (streaming, tools, images, structured output, embeddings, audio, Responses or Assistants APIs, `n` above 1, provider-specific options).
+Record each site: file, shared client/config location, SDK or protocol, model id (including placeholders), and features used (streaming, tools, images, structured output, embeddings, audio, Responses or Assistants APIs, `n` above 1, provider-specific options). Inspect secret presence without printing values. Gather the existing run/build commands so the migrated scaffold can be started and verified.
 
 ## 2. Choose a path per call site
 
@@ -23,15 +25,17 @@ Record each site: file, SDK or protocol, model id, and which features it uses (s
 | Image or video generation | **Inference API jobs.** `POST /v1/jobs` with a provider binding ID and an operation listed in `GET /v1/catalog`; asynchronous, so the call site must poll |
 | An operation or feature absent from the deployed contract, unavailable for the selected model, or lacking a faithful protocol mapping | **Stay on the current provider** and report the specific gap. Do not approximate it or reject supported structured output merely because an older Telos release lacked it |
 
-Show the user the inventory with the proposed path per site and wait for confirmation. Honor a path already chosen in the project or conversation. When a site fits both, prefer the Inference API unless the user wants Telos-managed sessions or per-user mapping.
+When a site fits both, use the Inference API unless the user wants Telos-managed sessions or per-user mapping. An instruction to migrate existing supported calls authorizes that path; do not ask separately to preserve the app or use its existing SDK. No theme, auth-provider, or context-consent onboarding is needed for an inference-only migration. Ask about authentication only where requested Assistant API features require an unresolved choice.
 
-## 3. Map models
+## 3. Prefer a router and map call sites
 
-Read `GET /v1/models` with the Telos key: ids are exact provider binding ids (a Telos name differs from OpenAI and OpenRouter model names), plus `route:<set_id>` for each company routing set, which lets Telos pick the model per request and reports it in `X-Telos-Model`. Check the catalog's capabilities and `limits` through `GET /v1/catalog` when a site needs tools or a large output budget. Propose a mapping from each current model id to a binding id, ask the user to confirm it, and never substitute silently. Put the confirmed id in configuration the app already uses for models instead of repeating it at call sites.
+Follow the shared [router and model selection guidance](chat-and-context.md#choose-a-routing-set). Read `GET /v1/models` with the Telos key and recommend an enabled router first: normally Orbit for balanced app work, or the enabled policy matching the user's priority. Use its exact discovered `route:<set_id>` as the existing SDK request's `model`; OpenRouter's previous model name or auto-routing setting is not a Telos router ID. Keep the current SDK and loop. Use an exact provider binding when the user explicitly wants a fixed model, or agrees to it after a router setup gap is explained. Check `GET /v1/catalog` and the deployed routing contract for required capabilities and limits.
+
+Present call-site paths, proposed router/model mappings, why the router fits, and any behavior-changing gaps in one concise review. Wait for unresolved choices, including approval to replace a fixed model with routing; preserve already confirmed choices. An explicitly retained exact model ID verified in discovery needs no replacement choice. Never silently substitute a model or router. Put confirmed IDs in the app's existing server-side model configuration instead of repeating them at call sites, and check `X-Telos-Model` to identify the concrete answering model on live inference calls.
 
 ## 4. Credentials and identity
 
-Create or reuse one developer key with `inference:write` (add `assistant:*` scopes only for Assistant API sites). Follow the [credential preflight](authentication.md#developer-key-and-user-mapping): the key stays in the server's secret configuration, never in `VITE_*`, `NEXT_PUBLIC_*`, browser storage, logs, or committed examples, and is never requested in chat.
+Reuse a configured Telos developer key with `inference:write`, or guide the developer through private setup when it is missing (add `assistant:*` scopes only for Assistant API sites). Follow the [credential preflight](authentication.md#developer-key-and-user-mapping), including the key link, exact server configuration destination and runtime presence check. The key stays in server secrets, never in `VITE_*`, `NEXT_PUBLIC_*`, browser storage, logs, or committed examples, and is never requested in chat. A coding harness's configured credential does not establish authorization to copy it into the app. Continue independent implementation while credentials or model choices are pending.
 
 Drop-in calls run as the key owner's workspace. Pass an opaque stable end-user id (never an email) in `user` (OpenAI protocol) or `metadata.user_id` (Anthropic protocol) for attribution and prompt-cache scoping only. It does not select a Telos user, so do not present it as per-user isolation.
 
@@ -50,7 +54,7 @@ Drop-in calls run as the key owner's workspace. Pass an opaque stable end-user i
 
 ## 7. Verify
 
-Run the project's own build and tests. With the authorized key, for each migrated site check a normal call, a streamed call to completion, a tool round trip if it uses tools, and a rejected unsupported field. Check one error path (bad key or missing scope) surfaces through the app's existing error handling, and that the browser bundle contains no Telos key. Without credentials, test against the schema and label mocks as mocks. Report which sites moved, which stayed and why, and which checks were live or mocked.
+Run the project's own build and relevant tests, then refresh the affected local runtime and exercise the existing app flow. With the authorized key, for each migrated site check a normal call, a streamed call to completion, a tool round trip if it uses tools, and a rejected unsupported field. Verify the returned model/routing metadata where documented. Check one error path (bad key or missing scope) surfaces through existing error handling, and that the browser bundle contains no Telos key. Without credentials, test against the schema and label mocks as mocks. Finish with the exact start command, private configuration destination and any remaining setup, plus which sites moved, which stayed and why, and which checks were live or mocked. Do not describe a scaffold with missing credentials as a working live integration.
 
 ## 8. Record in project instructions
 

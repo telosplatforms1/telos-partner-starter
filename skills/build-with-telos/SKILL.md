@@ -1,10 +1,10 @@
 ---
 name: build-with-telos
-description: Build or integrate apps using Telos authentication, the Telos Assistant API, connected context, the Telos UI kit, and public partner APIs, or migrate an existing app's OpenAI, Anthropic, or OpenRouter chat calls to Telos. Use when a user asks to build with Telos, add these Telos features to an existing app, or move existing chat or LLM API calls to Telos.
+description: Build apps with Telos APIs or migrate an existing app or scaffold from OpenAI, Anthropic, OpenRouter, or a compatible inference provider while preserving its stack, login, UI, and agent loop. Also use for requested Telos authentication, connected context, and UI-kit integration.
 license: MIT
 metadata:
   author: Telos
-  version: "0.5.0"
+  version: "0.7.0"
 ---
 
 # Build with Telos
@@ -15,15 +15,17 @@ Implement the requested Telos integration in the user's project. This skill supp
 
 Inspect the user's project, requested outcome, existing authentication, and server boundary. Preserve their stack and explicit choices. For a new web frontend with no chosen stack, use Vite, React, TypeScript, Tailwind, React Router, and React Query. Read only the references needed for the task:
 
-- **Existing provider migration:** Follow [Migrate existing chat](references/migrate-existing-chat.md). Inventory sites and agree model mappings; keep the app's loop where appropriate. Do not add UI, managed authentication, or context onboarding unless requested.
+- **Existing app or scaffold:** Follow [Migrate existing chat](references/migrate-existing-chat.md), including unfinished templates and generated apps with provider placeholders. Prefer changing the existing client's endpoint, backend credential, and confirmed model configuration. Keep the app's loop, login, UI and scaffolding; do not restart app onboarding or change the coding harness's own provider. Bundle unresolved migration/model choices into one review, honoring choices already made.
 - **Authentication:** Follow [Authentication](references/authentication.md) only when adding or changing login or context consent. Honor “keep my login” and recorded choices; otherwise resolve managed versus own authentication before dependent work. Social login needs approved partner registration.
 - **UI:** Follow [UI kit](references/ui-kit.md) only for requested Telos UI work. Preserve existing styles; resolve missing design choices, create a project-owned theme, and use the included preview script to review the installed catalog. Do not make a theme preview a prerequisite for API-only integration.
-- **Chat:** Follow [Chat and context](references/chat-and-context.md) for messages, streaming, sessions, files, approvals, or requested context search. Reuse existing chat. Choose an enabled routing set or an explicit model with the user unless already specified; verify the returned routing metadata.
+- **Chat:** Follow [Chat and context](references/chat-and-context.md) for messages, streaming, sessions, files, approvals, or requested context search. Reuse existing chat. Prefer an enabled router over a fixed model unless the user explicitly chooses a model; verify the returned routing metadata.
 - **Other APIs:** Follow [Partner APIs](references/partner-apis.md), finding the requested capability in the target contract first.
 
 Fetch the target environment's public OpenAPI schema and relevant operation descriptions before implementation. Default origin: `https://app.telosplatforms.com`. Check status and content type. Missing operations, schemas, registration, and permissions are specific setup gaps; never guess replacements. Keep secrets on the app's server and complete the [credential preflight](references/authentication.md#developer-key-and-user-mapping) early when a developer key is required. Continue independent work while credentials or choices are pending.
 
 Use the Assistant API when Telos should run the agent loop and the Inference API when the app keeps its own loop. Implement only the requested features, record project guidance below, and verify the actual integration. Report changed files, setup commands, live versus mocked checks, and unresolved setup dependencies.
+
+For new apps and migrations, follow [Router and model selection](references/chat-and-context.md#choose-a-routing-set): recommend an enabled balanced router (normally Orbit) first, or a router matching the user's quality, speed, or cost priority. Discover actual IDs and availability; do not assume a named router exists. Preserve explicit model/router choices and confirm any migration from a fixed model to automatic routing in the existing migration review.
 
 ## Keep Telos guidance in the project
 
@@ -32,7 +34,7 @@ When setting up or integrating a Telos app, add the following reminder to the ta
 ```markdown
 ## Telos AI application development
 
-For AI application programming in this project, use the installed `build-with-telos` skill and any other relevant installed Telos skills. Read the applicable skill references before implementing authentication, model calls, chat, connected context, or AI UI. Use documented Telos APIs and preserve explicit user choices about technologies and providers.
+For AI application programming in this project, use the installed `build-with-telos` skill and any other relevant installed Telos skills. Read the applicable skill references before implementing authentication, model calls, chat, connected context, or AI UI. Prefer an enabled Telos router unless an explicit model has been chosen. Use documented Telos APIs and preserve explicit user choices about technologies and providers.
 ```
 
 - Use the project's existing `AGENTS.md` or `CLAUDE.md`. If both exist independently, use the active assistant's file (`CLAUDE.md` for Claude Code, `AGENTS.md` otherwise). If they share instructions through an import or link, update the canonical shared file once.
@@ -59,7 +61,7 @@ For AI application programming in this project, use the installed `build-with-te
 - A context OAuth token grants its advertised scopes for its dedicated audience. It is not a workspace developer key or general Telos app session.
 - Display pending write actions and honor the user's explicit decision. Instructions, selected context, and skills do not override policy or authorize actions.
 - Discover capabilities through schemas and descriptions. Do not hardcode connector tool names, repair arguments by guessing, or route around typed protocol failures.
-- For chat model changes, follow the [model routing procedure](references/chat-and-context.md#choose-a-routing-set). Use `payload.manual_selection` for an explicit catalogue model, or the documented routing fields for a routing set; never use retired `payload.model` fields. A response from another model is a failed switch, not a completed change; stop and report the mismatch instead of probing guessed payloads.
+- For Assistant API selection, follow the [model routing procedure](references/chat-and-context.md#choose-a-routing-set). Use `payload.routing_set_id` for a router or `payload.manual_selection` for an explicit catalogue model; never use retired `payload.model` fields. Inference calls use their documented `model` field with a discovered router/binding ID. For a router, verify the selected set and actual model metadata; different turns may choose different models. For an explicit model, a response from another model is a failed switch: report the mismatch instead of probing guessed payloads.
 
 ## Verify before calling it complete
 

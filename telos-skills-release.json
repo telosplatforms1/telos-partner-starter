@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.2.0",
   "skills": [
     "build-with-telos",
     "telos-harness"
@@ -34,6 +34,44 @@
         "build-with-telos/references/partner-apis.md": "0974e9c4e01e9ea20e93fd5571cd9011c58d6cb559b7a396c372fcc861703673",
         "build-with-telos/references/ui-kit.md": "52fab73575f9eeadd1cd2981777590fa6d0623e89eb3708b53f3b8d0b499783b",
         "build-with-telos/scripts/prepare-design-system-preview.mjs": "ec098fc19968e4e148a2f3bfbda87e6503ed8bbb0f26dc42955cc150596886df"
+      },
+      {
+        "build-with-telos/agents/openai.yaml": "23aa26be89cae3b8b90f6341ce885eb5c99c8e51f5dd2890f6c7d89fdf466b0e",
+        "build-with-telos/LICENSE": "cff923126270e3b06c023154c053cce80ea7bad7d4f770a09b5d5d4a3d73da9a",
+        "build-with-telos/references/authentication.md": "2f39cedbf32216f4977ebba4cfeafdcdfc66344c9f1ab6b2513ef7c65ce8aad2",
+        "build-with-telos/references/chat-and-context.md": "de5c47da34fe3a510cd82e84e9be6a2f289c9ba44dc796c305cfccb0496f2b17",
+        "build-with-telos/references/migrate-existing-chat.md": "9685dcc5543c41f8e2934f6c4f61b686039ba8122cb62d0d653b5f6ce8933397",
+        "build-with-telos/references/partner-apis.md": "24dcf28596673e4b20e735d6daac57186b016d6747ad90ce7e6407f7e36511de",
+        "build-with-telos/references/ui-kit.md": "cb1f824e719ff04b8a9a2e494a7ae3bdc6235bfde63ef437e1912aa29ce9be07",
+        "build-with-telos/scripts/prepare-design-system-preview.mjs": "ec098fc19968e4e148a2f3bfbda87e6503ed8bbb0f26dc42955cc150596886df",
+        "build-with-telos/SKILL.md": "6d7257c53a2471cad724afc0b9e7d36ea513b3834137b2b8f6d22c22162f93bc"
+      },
+      {
+        "build-with-telos/agents/openai.yaml": "23aa26be89cae3b8b90f6341ce885eb5c99c8e51f5dd2890f6c7d89fdf466b0e",
+        "build-with-telos/LICENSE": "cff923126270e3b06c023154c053cce80ea7bad7d4f770a09b5d5d4a3d73da9a",
+        "build-with-telos/references/authentication.md": "2f39cedbf32216f4977ebba4cfeafdcdfc66344c9f1ab6b2513ef7c65ce8aad2",
+        "build-with-telos/references/chat-and-context.md": "de5c47da34fe3a510cd82e84e9be6a2f289c9ba44dc796c305cfccb0496f2b17",
+        "build-with-telos/references/migrate-existing-chat.md": "ec768fad550571c264246302e35f50f3f20b407298a3c7b02f4d17529e96de40",
+        "build-with-telos/references/partner-apis.md": "24dcf28596673e4b20e735d6daac57186b016d6747ad90ce7e6407f7e36511de",
+        "build-with-telos/references/ui-kit.md": "cb1f824e719ff04b8a9a2e494a7ae3bdc6235bfde63ef437e1912aa29ce9be07",
+        "build-with-telos/scripts/prepare-design-system-preview.mjs": "ec098fc19968e4e148a2f3bfbda87e6503ed8bbb0f26dc42955cc150596886df",
+        "build-with-telos/SKILL.md": "0a3c56b7089133cb5cb1509449a2638ac7490d7fbe3c7984e96a8e5831700324"
+      }
+    ],
+    "telos-harness": [
+      {
+        "telos-harness/agents/openai.yaml": "96f821394dd8416e040922615b213c16f028f4974c4a13bef01616297bd05035",
+        "telos-harness/LICENSE": "cff923126270e3b06c023154c053cce80ea7bad7d4f770a09b5d5d4a3d73da9a",
+        "telos-harness/references/aider.md": "a44b4ad146fd9bbc14527dba4839bd7c85f2d33b095bd71cb3c33b20b6ba72d7",
+        "telos-harness/references/claude.md": "1a9de528849755098b8e96f555e6aca56f943555cb9a657dc3193ff9ab65ac7c",
+        "telos-harness/references/codex.md": "29280f937148aff3756b6c947b687fe4a2b7d51edfb9d180159c1e95fb31dd57",
+        "telos-harness/references/hermes.md": "7dac11668da9e31a4f54838bd6ae14e2e1003a413725f9d0a6a94feb914fcc3f",
+        "telos-harness/references/memory-sources.md": "b79eee053a2ae9b16b9bc3922868f65c3bb072700fcda172640caddfc3e75ada",
+        "telos-harness/references/memory.md": "61cf838633dedd924e69dfcb7544c66f7661b51b9b93dacf9b5cad81cf28fec0",
+        "telos-harness/references/openclaw.md": "873d5e5da095f0dbc69c2c84f08f7748c57788f45d656f375eed352cbc229735",
+        "telos-harness/references/opencode.md": "16028358d17bac855afb6a7a8e9ec9b5373f5291b8fd47a39b19c92eb8199a18",
+        "telos-harness/references/pi.md": "9009b772b9f110cc655d65eb1683fd21e218563dfab6530934a26d9dc3bb8948",
+        "telos-harness/SKILL.md": "c354ea85086d3c95a23064baefcb0c04e07fd1fcb947a20ea269652105397e72"
       }
     ]
   }

@@ -2,13 +2,31 @@
 
 The Assistant API is the variant of the Telos API where Telos runs the harness: it builds the prompt from the agent, memory, and connected context, runs permitted tools with approvals, and stores the session. (It was called ChatKit before API version 3.0.0.) To keep an existing agent loop and only route its model calls through Telos, use the Inference API instead; see [Migrate existing chat](migrate-existing-chat.md).
 
-Use the target deployment's [Assistant API schema](https://app.telosplatforms.com/api/public/openapi/assistant.json) and [chat guide](https://app.telosplatforms.com/developers/chat). Complete [authentication and user mapping](authentication.md) first.
+Use the target deployment's [Assistant API schema](https://app.telosplatforms.com/api/public/openapi/assistant.json) and [chat guide](https://app.telosplatforms.com/developers/chat). Complete [authentication and user mapping](authentication.md) before Assistant API calls. The selection guidance below also applies to Inference API integrations and migrations.
 
 ## Choose a routing set
 
-Telos chooses the model inside the company's routing policy. A company admin configures **routing sets** (for example `speed`, `cost`, or `absolute_best`) in Admin settings → Model routing; each set contains use-case **profiles** with approved models and reasoning efforts. A request selects a set; Jev then picks the profile for the task and an eligible model and effort within it. Alternatively, a request can choose one model directly with `manual_selection`, skipping routing.
+Prefer an enabled **router** for new apps and provider migrations. A router is a company-owned routing set: the app selects its policy, then Telos chooses a use-case profile and an eligible model and reasoning effort for each request. This keeps the app's model setting stable as the workspace updates its approved models. A fixed model remains available for an explicit user choice or a requirement to pin the exact model.
 
-Before configuring generation, resolve the user's routing set or explicit model choice unless already specified in the project or conversation. Read enabled set/profile and catalog model IDs from the workspace's model-routing configuration using its documented access mechanism. If the partner contract does not expose that configuration, obtain the verified IDs from the workspace administrator; do not use a developer key against an app-session settings endpoint. Names and IDs are editable, so never hardcode examples from these docs.
+Use the existing confirmed choice first. Otherwise recommend the enabled balanced router for general app/chat work; normally this is **Orbit**. When the user states another priority, recommend the matching enabled router. Current built-in policy intentions are:
+
+| Router | Recommend when the priority is |
+|---|---|
+| **Orbit** | General use: balance task quality, expected total cost, and response time. Default recommendation. |
+| **Zenith** | Intelligence and task quality. |
+| **Warp** | Fast completed responses while meeting the required intelligence level. |
+| **Slingshot** | Low completed-task cost while meeting the required intelligence level. |
+
+These are selection guidance, not an availability list or fixed price/performance promises. Names, IDs, candidates and company policies are editable. Use returned labels and the target workspace's documented configuration as authoritative; do not invent a router, choose by a model-name heuristic, or use an unavailable built-in name. Check the requested modalities, tools, structured output and limits against the deployed contract and eligible configuration. Do not offer a router for an unsupported operation.
+
+| API | Discover and configure the choice |
+|---|---|
+| **Inference API**, including OpenAI/OpenRouter and Anthropic client migrations | Read authenticated `GET /v1/models`; recommend an available `route:<set_id>` entry using its returned `display_name` and documented policy. Put that exact ID in the existing server-side model setting and send it as request `model`. For example, use `route:orbit` only if discovery actually returns it. The concrete model used is reported in `X-Telos-Model`; preserve routing/decision metadata where documented. |
+| **Assistant API** | Read enabled set/profile IDs from the workspace's model-routing configuration through documented access, or obtain them from its administrator if partner APIs do not expose it. Send the verified set ID as `payload.routing_set_id`, without the Inference API's `route:` prefix. Omit `routing_profile_id` to let Telos choose the use case, and leave effort unspecified unless explicitly requested. Do not send `manual_selection` alongside routing fields. |
+
+For a new app with no explicit selection, use the verified enabled balanced router and state its ID and rationale; do not begin with a model-versus-router questionnaire. Ask one focused question only if the available policies leave the priority or selection ambiguous. For migrations, include the router recommendation in the single call-site/model review: retaining an old provider's model string is not an explicit request to pin that model after migration, but switching to routing still needs the user's agreement. Honor a previously selected router or an explicit fixed-model requirement without repeating selection. If no suitable router is enabled, report that setup gap and ask whether to have an administrator enable one or use a verified fixed model; never silently fall back, enable a policy, or select another provider. A developer key does not authorize app-session settings access.
+
+The following fields apply specifically to the Assistant API:
 
 | Field inside `payload` | Use |
 |---|---|
@@ -19,7 +37,7 @@ Before configuring generation, resolve the user's routing set or explicit model 
 
 The former top-level `provider`, `model`, and `model_key` fields are retired and return HTTP 422 with `retired_model_selection`; choose a model with `manual_selection` instead. Other typed failures: `routing_set_unconfigured` (disabled or empty set), `routing_profile_unavailable` (profile outside the set), `routing_selection_conflict` (both a router and a model), `manual_selection_unavailable` (model not runnable). Telos never substitutes another model after a routing failure, so report the typed error instead of trying other payload shapes.
 
-Responses include `model_routing` (decision ID, set, profile, model, effort, policy revision); streams send it in the initial `model_routing` event. Use it to confirm which model answered. Record the chosen set, its server-side configuration location, and verification status in project instructions so the next change edits one setting.
+Assistant responses include `model_routing` (decision ID, set, profile, model, effort, policy revision); streams send it in the initial `model_routing` event. Confirm the selected set and record the actual answering model; routing is expected to vary the model between requests. A fixed-model request must match its explicit choice. Record the API path, chosen router/set ID or fixed model, selection reason, server-side configuration location, and verification status in project instructions so the next change edits one setting.
 
 ## Send a turn
 

@@ -4,7 +4,7 @@ Sync is one-way: curated memory files go into Telos without LLM extraction. It d
 
 ## Inspect before configuring
 
-Use Settings → Context & memory → Harness memory sync in the Telos macOS app. Inspect connected profiles, selected roots, pending work and acknowledgements. If the desired profile is connected and healthy, later supported edits already sync automatically. Missing roots or scan errors do not imply deletion.
+For a new connection, use the current harness setup command from Telos Platform with `--sync-memories`. It selects the curated folder, verifies memory-sync access, uploads the initial files, and starts a per-user background service; no desktop-app setup is needed. Use `--memory-root /absolute/path` for an explicit noninteractive selection. For connections previously made in the Telos app, use Settings → Context & memory → Harness memory sync. Inspect connected profiles, selected roots, pending work and acknowledgements. If the desired profile is connected and healthy, later supported edits already sync automatically. Missing roots or scan errors do not imply deletion.
 
 For a new connection, identify the actual profile's [curated sources](memory-sources.md). Select personal or authorized project scope; a directory includes future supported files unless the user limits it to explicit files. Exclude raw transcripts, instruction files, hidden reasoning, secrets and internal databases. No content preview or repeated review is required.
 
@@ -20,7 +20,7 @@ For project uploads, also bind the inference key's `memory_project_id` to the sa
 
 ## CLI alternative
 
-The source-distributed CLI is `desktopApp/memorySyncCli.js` in a Telos checkout, also included in the desktop distribution. It requires macOS Keychain and Node.js 22+. Locate the actual installed file; if absent, use the desktop panel rather than inventing a package/download. From its containing directory:
+The source-distributed CLI is `desktopApp/memorySyncCli.js` in a Telos checkout, also included in the desktop distribution. It requires Node.js 22+ and macOS Keychain or Linux Secret Service (`secret-tool`). The official harness setup installs the same CLI in its environment-specific runtime directory and connects its encrypted authorization. Locate the actual installed file rather than inventing a package/download. From its containing directory:
 
 ```sh
 node memorySyncCli.js help
@@ -30,10 +30,10 @@ node memorySyncCli.js status
 node memorySyncCli.js run
 ```
 
-`help` and `discover` are read-only. Authenticated commands require privately configured `TELOS_API_URL` and `TELOS_API_KEY` with `memory:sync`; never request the key in chat. Add `--project <authorized-project-UUID>` for project uploads and `--files a.md,b.md` only to limit selection. `add` performs an initial batch; `once` processes one bounded batch. Keep `run` running for ongoing sync. The outbox is encrypted; credentials are not stored by the CLI. Do not run a second CLI process against the same state file.
+`help` and `discover` are read-only. Authenticated commands use the setup-created encrypted authorization when given its `--state PATH`, or privately configured `TELOS_API_URL` and `TELOS_API_KEY` with `memory:sync`; never request the key in chat. Add `--project <authorized-project-UUID>` for project uploads and `--files a.md,b.md` only to limit selection. `add` performs an initial batch; `once` processes one bounded batch. Keep `run` running for ongoing sync. The outbox and setup-created authorization are encrypted with OS-protected keys. Stop a running background service before manually opening its state file with the CLI; a second process is rejected.
 
 ## Recovery and removal
 
-Check the source acknowledgement, pending/error state, selected key mode and project binding before claiming success. Do not issue paid inference solely for setup verification unless requested. Linux users can use supported Telos inference/connectors, but this file-sync client currently requires macOS.
+Check the source acknowledgement, pending/error state, selected key mode and project binding before claiming success. Do not issue paid inference solely for setup verification unless requested. Integrated background setup requires a logged-in macOS user session or a Linux user systemd session with Secret Service. Missing runtime, secure storage, permission, folder or service errors stop setup explicitly; do not claim memory sync is active after a failure.
 
 Pause or disconnect a profile with the panel or `action --connection UUID --action pause|resume|disconnect`. This retains cloud copies. Source-level `action --source UUID --action forget` deletes its cloud copy and suppresses reupload until explicit `restore`; preserve its identity. Native files remain untouched. Returning a key to Telos learning does not remove imported context. To stop all memory use for a key, turn Memory off and independently disconnect file sources if requested.

@@ -4,7 +4,7 @@ description: Set up or use Telos in a coding agent, including model selection, c
 license: MIT
 metadata:
   author: Telos
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Telos in your coding agent
@@ -28,6 +28,7 @@ Identify the running harness/version, profile, effective configuration and Telos
 ## Connection and everyday use
 
 - For initial setup or a requested change, open the target Telos environment's `/platform/api-keys/connect` page and use its generated command. The existing installer handles browser consent, exact model discovery, native settings and skill installation. Do not invent download hosts or replace it with a wrapper, proxy, provider patch, or separate credential store. Report missing harness/uv prerequisites.
+- Use the managed `launch` command in the public repository README for future sessions; it loads the installer and bundle from `https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/`. It refreshes both skills before starting the native harness, without changing inference settings or requesting new consent. Older environment-hosted commands follow that deployment; switch to the published command to follow public releases. A locally edited skill (including added/deleted files) is preserved as a whole and reported; clean skills still update. Restore its original files or move the edited directory aside to resume updates. Download/validation/write failures stop the launch with a typed error. Bare harness commands bypass refresh; pass native arguments after `--`. A version-pinned bundle stays pinned.
 - Discover exact callable model/router IDs with authenticated `/v1/models`; use `/v1/catalog` for supported metadata. Preserve the user's choice and effective native overrides. Reuse setup with the chosen ID to update native defaults, then check a fresh session. A saved default alone does not prove which model answered. Do not issue paid inference merely to check configuration unless requested.
 - For connected-account tasks, discover the available tools, their schemas and account bindings using the harness's native discovery. Follow the shared MCP instructions and existing user choices. Do not copy tool catalogs into this skill, guess names/arguments, or interpret an empty resource listing as missing tools.
 - Read access and delegated actions require their respective explicit grants in setup. Installing a skill does not request either. Keep native permissions and denials binding; never route a denied action through another integration. For an uncertain write outcome, inspect the result before retrying.
