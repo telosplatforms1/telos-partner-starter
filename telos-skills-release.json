@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0",
+  "version": "1.2.1",
   "skills": [
     "build-with-telos",
     "telos-harness"
@@ -72,6 +72,20 @@
         "telos-harness/references/opencode.md": "16028358d17bac855afb6a7a8e9ec9b5373f5291b8fd47a39b19c92eb8199a18",
         "telos-harness/references/pi.md": "9009b772b9f110cc655d65eb1683fd21e218563dfab6530934a26d9dc3bb8948",
         "telos-harness/SKILL.md": "c354ea85086d3c95a23064baefcb0c04e07fd1fcb947a20ea269652105397e72"
+      },
+      {
+        "telos-harness/LICENSE": "cff923126270e3b06c023154c053cce80ea7bad7d4f770a09b5d5d4a3d73da9a",
+        "telos-harness/SKILL.md": "c354ea85086d3c95a23064baefcb0c04e07fd1fcb947a20ea269652105397e72",
+        "telos-harness/agents/openai.yaml": "96f821394dd8416e040922615b213c16f028f4974c4a13bef01616297bd05035",
+        "telos-harness/references/aider.md": "a44b4ad146fd9bbc14527dba4839bd7c85f2d33b095bd71cb3c33b20b6ba72d7",
+        "telos-harness/references/claude.md": "1a9de528849755098b8e96f555e6aca56f943555cb9a657dc3193ff9ab65ac7c",
+        "telos-harness/references/codex.md": "29280f937148aff3756b6c947b687fe4a2b7d51edfb9d180159c1e95fb31dd57",
+        "telos-harness/references/hermes.md": "7dac11668da9e31a4f54838bd6ae14e2e1003a413725f9d0a6a94feb914fcc3f",
+        "telos-harness/references/memory-sources.md": "b79eee053a2ae9b16b9bc3922868f65c3bb072700fcda172640caddfc3e75ada",
+        "telos-harness/references/memory.md": "237a2411b5c3857cd14819614b3a12a832dfa40293ec0331b944be4928e42c4f",
+        "telos-harness/references/openclaw.md": "873d5e5da095f0dbc69c2c84f08f7748c57788f45d656f375eed352cbc229735",
+        "telos-harness/references/opencode.md": "16028358d17bac855afb6a7a8e9ec9b5373f5291b8fd47a39b19c92eb8199a18",
+        "telos-harness/references/pi.md": "9009b772b9f110cc655d65eb1683fd21e218563dfab6530934a26d9dc3bb8948"
       }
     ]
   }
