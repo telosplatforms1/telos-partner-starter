@@ -1,5 +1,5 @@
 {
-  "version": "1.2.1",
+  "version": "1.2.2",
   "skills": [
     "build-with-telos",
     "telos-harness"
@@ -56,6 +56,17 @@
         "build-with-telos/references/ui-kit.md": "cb1f824e719ff04b8a9a2e494a7ae3bdc6235bfde63ef437e1912aa29ce9be07",
         "build-with-telos/scripts/prepare-design-system-preview.mjs": "ec098fc19968e4e148a2f3bfbda87e6503ed8bbb0f26dc42955cc150596886df",
         "build-with-telos/SKILL.md": "0a3c56b7089133cb5cb1509449a2638ac7490d7fbe3c7984e96a8e5831700324"
+      },
+      {
+        "build-with-telos/agents/openai.yaml": "23aa26be89cae3b8b90f6341ce885eb5c99c8e51f5dd2890f6c7d89fdf466b0e",
+        "build-with-telos/LICENSE": "cff923126270e3b06c023154c053cce80ea7bad7d4f770a09b5d5d4a3d73da9a",
+        "build-with-telos/references/authentication.md": "2f39cedbf32216f4977ebba4cfeafdcdfc66344c9f1ab6b2513ef7c65ce8aad2",
+        "build-with-telos/references/chat-and-context.md": "845bf7c77011f1352d3cf811795db65496953092184c139f4802247a8b8a898c",
+        "build-with-telos/references/migrate-existing-chat.md": "d63556b4c08570a17105f4b290ba84efbd8ce080fb2f3645be3d3fdf7b3c1222",
+        "build-with-telos/references/partner-apis.md": "24dcf28596673e4b20e735d6daac57186b016d6747ad90ce7e6407f7e36511de",
+        "build-with-telos/references/ui-kit.md": "cb1f824e719ff04b8a9a2e494a7ae3bdc6235bfde63ef437e1912aa29ce9be07",
+        "build-with-telos/scripts/prepare-design-system-preview.mjs": "ec098fc19968e4e148a2f3bfbda87e6503ed8bbb0f26dc42955cc150596886df",
+        "build-with-telos/SKILL.md": "4792f9a792f5c0b069b6333b5d52a77829eb6070b5bcfbd4e9c52704653bf13c"
       }
     ],
     "telos-harness": [

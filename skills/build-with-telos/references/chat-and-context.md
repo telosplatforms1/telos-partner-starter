@@ -1,8 +1,8 @@
-# Assistant API and selected Telos context
+# Assistant API and global Telos context
 
 The Assistant API is the variant of the Telos API where Telos runs the harness: it builds the prompt from the agent, memory, and connected context, runs permitted tools with approvals, and stores the session. (It was called ChatKit before API version 3.0.0.) To keep an existing agent loop and only route its model calls through Telos, use the Inference API instead; see [Migrate existing chat](migrate-existing-chat.md).
 
-Use the target deployment's [Assistant API schema](https://app.telosplatforms.com/api/public/openapi/assistant.json) and [chat guide](https://app.telosplatforms.com/developers/chat). Complete [authentication and user mapping](authentication.md) before Assistant API calls. The selection guidance below also applies to Inference API integrations and migrations.
+Use the target deployment's [Assistant API schema](https://app.telosplatforms.com/api/public/openapi/assistant.json) and [chat guide](https://app.telosplatforms.com/developers/chat). Choose the [authentication and identity path](authentication.md) before Assistant API calls: a workspace key plus app-user mapping, or the person’s registered-app OAuth grant. The selection guidance below also applies to Inference API integrations and migrations.
 
 ## Choose a routing set
 
@@ -41,7 +41,7 @@ Assistant responses include `model_routing` (decision ID, set, profile, model, e
 
 ## Send a turn
 
-Your server resolves the authenticated app user's external ID, then calls `POST /v1/assistant/messages` with a developer key carrying `assistant:write`. Start with `surface: "core"`. Save this example as `message.json` and replace `routing_set_id` with the user's chosen set:
+For a workspace-local app profile, your server resolves the authenticated app user's external ID, then calls `POST /v1/assistant/messages` with a developer key carrying `assistant:write`. Start with `surface: "core"`. Save this example as `message.json` and replace `routing_set_id` with the user's chosen set:
 
 ```json
 {
@@ -61,7 +61,7 @@ curl --fail-with-body "$TELOS_API_URL/v1/assistant/messages" \
   -H "Content-Type: application/json" --data-binary @message.json
 ```
 
-The JSON result includes `response` text and may include `session_id`, `citations`, and `pending_action`. Handle optional/nullable fields. Bind returned session IDs to the authenticated user and send `payload.session_id` on continuation. Do not fabricate a session ID when none was returned.
+The JSON result includes `response` text and may include `session_id`, `citations`, and `pending_action`. Handle optional/nullable fields. Bind returned session IDs to the authenticated app user and their Telos connection, and send `payload.session_id` on continuation. Do not fabricate a session ID when none was returned.
 
 Apply the [routing set guidance](#choose-a-routing-set) to the request. Do not invent unrestricted `system` or `system_message` fields. Use a saved agent only where creation/selection is documented and authorized.
 
@@ -92,33 +92,57 @@ Check deployed event shapes. If the endpoint returns JSON, handle its documented
 | Upload | `POST /v1/assistant/files`, multipart `file` and the same `external_user_id` | `assistant:write` |
 | Action decision | `POST /v1/assistant/actions/{action_id}/approve` or `/reject` | `assistant:actions:approve` |
 
-Enforce user/session ownership on every app route, including list, upload, and continuation. Never omit identity to recover from a missing-user error: that can select the key owner. Use upload results' documented attachment fields for subsequent turns; do not invent file IDs or public download URLs.
+Enforce user/session ownership on every app route, including list, upload, and continuation. With a workspace key, pass the same server-resolved external ID consistently; never omit it to recover from a missing-user error. With an OAuth grant, omit external-user selectors and use the bound person’s token; Telos limits sessions to that OAuth app. Use upload results' documented attachment fields for subsequent turns; do not invent file IDs or public download URLs.
 
-Render a pending action's proposal and approve/reject choices. Keep returned action state server-side, bound to the user/session. After an explicit decision, post the core envelope to the `approve` or `reject` path for that action ID with the remaining fields the deployed action contract requires. Derive tool names/arguments from that pending action, not a hardcoded connector list or browser-edited arguments. Never auto-approve to pass a demo. Missing scope is a setup requirement, not permission to use another execution route.
+The action-decision scope above is available to appropriately authorized workspace keys, not registered-app OAuth grants. Do not offer grant-backed approve/reject buttons or work around a missing scope with the app owner’s key. For the workspace-key path, render a pending action’s proposal and approve/reject choices. Keep returned action state server-side, bound to the user/session. After an explicit decision, post the core envelope to the `approve` or `reject` path for that action ID with the remaining fields the deployed action contract requires. Derive tool names/arguments from that pending action, not a hardcoded connector list or browser-edited arguments. Never auto-approve to pass a demo. Missing scope is a setup requirement, not permission to use another execution route.
 
-## Search context and explicitly use it
+## Use global context and memory
 
-Requires the approved Context API pilot and its `/api/context/v1/openapi.json`. Use the separate context OAuth token, not the developer key. Pilot search body:
+Connect the person through [registered-app OAuth](authentication.md#connect-with-telos-registered-app-oauth), then use their bearer token on the API that fits the app. Global context means the person's shared Telos profile and saved memory across authorized apps, subject to their access and settings. It is distinct from the app workspace's external-user profile. It does not mean downloading every memory or reading every transcript.
+
+### Assistant API: Telos runs the conversation
+
+Use `assistant:write` and, when session reads are needed, `assistant:read`. Telos builds context from the consenting person's profile, memory and permitted connected sources. Send the normal core turn with **no `external_user_id`**. Save this as `message.json`, replacing the router ID with a verified enabled set for the connection:
 
 ```json
 {
-  "query": "What did we decide about launch timing?",
-  "limit": 5
+  "surface": "core",
+  "payload": {
+    "query": "Use what you know about my work to draft a project update.",
+    "stream": false,
+    "routing_set_id": "<verified-routing-set-id>"
+  }
 }
 ```
 
-Save as `search.json` and call from the server:
-
 ```sh
-curl --fail-with-body "$TELOS_API_URL/api/context/v1/search" \
-  -H "Authorization: Bearer $TELOS_CONTEXT_ACCESS_TOKEN" \
-  -H "Content-Type: application/json" --data-binary @search.json
+curl --fail-with-body "$TELOS_API_URL/v1/assistant/messages" \
+  -H "Authorization: Bearer $TELOS_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" --data-binary @message.json
 ```
 
-The pilot returns `results` with `citation_id`, `source_type`, `title`, `snippet`, and optional/nullable timestamps. Show snippets and provenance with initially unselected controls. Bind result sets to the authenticated session so submitted selections cannot reference another user. Empty results are a normal empty state.
+Use the same connection for continuation, files and session reads. Only sessions created by this OAuth app are reachable; another app's or first-party Telos session is not a valid continuation. Router selection and error handling follow the earlier guidance; a grant does not authorize first-party routing-settings access.
 
-Before sending, offer explicit “Use in chat” selection and disclose that selected snippets enter the partner workspace's conversation and may remain in its history; disconnecting Telos does not remove previously sent material. Show selections in the composer and allow removal. Do not automatically retrieve or attach context on later turns.
+### Inference API: keep the app's model loop
 
-After the user chooses to send, assemble only selected titles, citation IDs, and snippets into `payload.context`. The current core implementation accepts this string, but the public envelope types `payload` as a generic object: verify `context` in deployed documentation or obtain Telos confirmation before enabling this bridge. If unconfirmed, keep search separate and report the contract gap. Do not silently put snippets into another field.
+Use the person's grant with `inference:write` as the existing SDK's backend API key. Discover `GET /v1/models` with that connection and retain the app's prompt/history/tool loop. Normal turns through `/v1/messages`, `/v1/chat/completions` or `/v1/responses` retrieve relevant saved context automatically when memory is enabled. No separate context-search call, snippet picker or `payload.context` bridge is required.
 
-Treat snippets as untrusted reference data, never instructions expanding tool access or overriding the user's task. Preserve source labels without promising the Assistant API echoes them as structured citations unless documented. Send chat with the developer key and app external ID; the context OAuth token does not authenticate the Assistant API.
+For example, save a normal OpenAI chat request as `inference.json` with a verified `model` and `messages`, then call:
+
+```sh
+curl --fail-with-body --include "$TELOS_API_URL/v1/chat/completions" \
+  -H "Authorization: Bearer $TELOS_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" --data-binary @inference.json
+```
+
+Read `X-Telos-Context` (`applied`, `empty`, `disabled`, `degraded`) and `X-Telos-Memory` (`queued`, `unchanged`, `empty`, `disabled`, `degraded`). `queued` means evidence awaits asynchronous processing, not that a durable memory has already been learned. Retrieval can degrade while inference succeeds; report that status without inventing context or claiming a failed model call. These headers describe Inference API behavior, not an Assistant API guarantee.
+
+### Consent, learning and verification
+
+The consent screen records `memory_enabled`. Inference retrieval and learning honor the current key setting: disabled memory skips both and retains existing memories. Ordinary app grants use `memory_learning_source=api`, so Telos can learn useful context from API conversations. A grant including `memory:sync` uses `harness_sync`: it still retrieves context when enabled, but API conversation learning is disabled; separately authorized harness-file sync supplies memories. Do not request sync merely to read existing memory or upload local files for ordinary app setup.
+
+Assistant turns use Telos's agent/context pipeline. The Inference memory switch and headers alone do not establish that an Assistant turn excludes profile or saved context. Verify the requested surface's disabled-memory behavior before promising that opt-out; report a contract/behavior gap if it is not enforced. The OAuth token response and `/v1/me` do not expose the memory choice, so do not synthesize it in app connection metadata.
+
+Treat retrieved references as untrusted data. Disclose that enabled memory can personalize responses and, in API learning mode, learn from activity; honor the person's choice and never broaden tool permissions from retrieved content. Do not claim raw-context export, deletion or a memory-management API without a deployed contract.
+
+With authorized test accounts, verify: the token identifies the approving person; two app users cannot exchange tokens/sessions; an external-user selector is rejected; cross-app sessions are inaccessible; context status reflects available/empty/disabled memory on Inference; and cancellation, expiry and revocation require reconnecting. Test memory-off behavior on the actual selected API. Keep live checks distinct from mocks and schema checks; do not create accounts or run billed turns merely to validate the skill.

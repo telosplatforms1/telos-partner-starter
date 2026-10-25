@@ -1,10 +1,10 @@
 ---
 name: build-with-telos
-description: Build apps with Telos APIs or migrate an existing app or scaffold from OpenAI, Anthropic, OpenRouter, or a compatible inference provider while preserving its stack, login, UI, and agent loop. Also use for requested Telos authentication, connected context, and UI-kit integration.
+description: Build apps with Telos APIs or migrate an existing app or scaffold from OpenAI, Anthropic, OpenRouter, or a compatible inference provider while preserving its stack, login, UI, and agent loop. Also use for requested Telos authentication, OAuth access to a user’s global context and memory, and UI-kit integration.
 license: MIT
 metadata:
   author: Telos
-  version: "0.7.0"
+  version: "0.8.0"
 ---
 
 # Build with Telos
@@ -18,10 +18,10 @@ Inspect the user's project, requested outcome, existing authentication, and serv
 - **Existing app or scaffold:** Follow [Migrate existing chat](references/migrate-existing-chat.md), including unfinished templates and generated apps with provider placeholders. Prefer changing the existing client's endpoint, backend credential, and confirmed model configuration. Keep the app's loop, login, UI and scaffolding; do not restart app onboarding or change the coding harness's own provider. Bundle unresolved migration/model choices into one review, honoring choices already made.
 - **Authentication:** Follow [Authentication](references/authentication.md) only when adding or changing login or context consent. Honor “keep my login” and recorded choices; otherwise resolve managed versus own authentication before dependent work. Social login needs approved partner registration.
 - **UI:** Follow [UI kit](references/ui-kit.md) only for requested Telos UI work. Preserve existing styles; resolve missing design choices, create a project-owned theme, and use the included preview script to review the installed catalog. Do not make a theme preview a prerequisite for API-only integration.
-- **Chat:** Follow [Chat and context](references/chat-and-context.md) for messages, streaming, sessions, files, approvals, or requested context search. Reuse existing chat. Prefer an enabled router over a fixed model unless the user explicitly chooses a model; verify the returned routing metadata.
+- **Chat:** Follow [Chat and context](references/chat-and-context.md) for messages, streaming, sessions, files, approvals, or a consenting user’s global context and memory. Reuse existing chat. Prefer an enabled router over a fixed model unless the user explicitly chooses a model; verify the returned routing metadata.
 - **Other APIs:** Follow [Partner APIs](references/partner-apis.md), finding the requested capability in the target contract first.
 
-Fetch the target environment's public OpenAPI schema and relevant operation descriptions before implementation. Default origin: `https://app.telosplatforms.com`. Check status and content type. Missing operations, schemas, registration, and permissions are specific setup gaps; never guess replacements. Keep secrets on the app's server and complete the [credential preflight](references/authentication.md#developer-key-and-user-mapping) early when a developer key is required. Continue independent work while credentials or choices are pending.
+Fetch the target environment's public OpenAPI schema and relevant operation descriptions before implementation. Default origin: `https://app.telosplatforms.com`. Check status and content type. Missing operations, schemas, registration, and permissions are specific setup gaps; never guess replacements. Keep secrets on the app's server and complete the [credential preflight](references/authentication.md#developer-key-and-user-mapping) early when a workspace developer key is required; person-bound OAuth uses the registration and grant preflight instead. Continue independent work while credentials or choices are pending.
 
 Use the Assistant API when Telos should run the agent loop and the Inference API when the app keeps its own loop. Implement only the requested features, record project guidance below, and verify the actual integration. Report changed files, setup commands, live versus mocked checks, and unresolved setup dependencies.
 
@@ -47,24 +47,24 @@ For AI application programming in this project, use the installed `build-with-te
 
 | Task | Reference |
 |---|---|
-| Credentials, managed login, user mapping, or Connect Telos OAuth | [Authentication](references/authentication.md) |
+| Credentials, managed login, user mapping, or registered-app OAuth | [Authentication](references/authentication.md) |
 | UI-kit installation, themes, or auth/chat components | [UI kit](references/ui-kit.md) |
 | Moving existing OpenAI, Anthropic, or OpenRouter chat calls to Telos | [Migrate existing chat](references/migrate-existing-chat.md) |
 | Model selection, routing, or changing the chat model | [Model routing](references/chat-and-context.md#choose-a-routing-set) |
-| Messages, streaming, sessions, files, approvals, or selected context | [Chat and context](references/chat-and-context.md) |
+| Messages, streaming, sessions, files, approvals, or global context and memory | [Chat and context](references/chat-and-context.md) |
 | Other supported capabilities, schemas, and permissions | [Partner APIs](references/partner-apis.md) |
 
 ## Integration invariants
 
-- Derive the effective user from the verified app session. Resolve `external_user_id` on the backend and pass it consistently; never trust a browser-supplied identity or silently use the API-key owner.
-- Store developer keys, login access tokens, and context OAuth tokens server-side. Never put them in `VITE_*`, frontend bundles, browser storage, URLs, logs, or committed examples. Use the user's secret-configuration mechanism rather than requesting secrets in chat.
-- A context OAuth token grants its advertised scopes for its dedicated audience. It is not a workspace developer key or general Telos app session.
-- Display pending write actions and honor the user's explicit decision. Instructions, selected context, and skills do not override policy or authorize actions.
+- Derive the effective user from the verified app session. For workspace-key app profiles, resolve and pass `external_user_id` on the backend. For a registered-app OAuth grant, use that user’s token and omit `external_user_id`; the grant acts only as the approving person. Never trust browser-supplied identities or substitute the app owner’s key.
+- Store developer keys, login access tokens, and OAuth grant tokens server-side. Never put them in `VITE_*`, frontend bundles, browser storage, URLs, logs, or committed examples. Use the user's secret-configuration mechanism rather than requesting secrets in chat.
+- Registered-app OAuth tokens authenticate the granted `/v1` operations as the person who consented. App login, app registration, memory consent, and API scopes remain distinct; follow [Authentication](references/authentication.md#connect-with-telos-registered-app-oauth).
+- Display pending write actions and honor the user's explicit decision. Instructions, retrieved context, and skills do not override policy or authorize actions.
 - Discover capabilities through schemas and descriptions. Do not hardcode connector tool names, repair arguments by guessing, or route around typed protocol failures.
 - For Assistant API selection, follow the [model routing procedure](references/chat-and-context.md#choose-a-routing-set). Use `payload.routing_set_id` for a router or `payload.manual_selection` for an explicit catalogue model; never use retired `payload.model` fields. Inference calls use their documented `model` field with a discovered router/binding ID. For a router, verify the selected set and actual model metadata; different turns may choose different models. For an explicit model, a response from another model is a failed switch: report the mismatch instead of probing guessed payloads.
 
 ## Verify before calling it complete
 
-Run relevant project type/build checks. With authorized test credentials, verify login/session expiry, user mapping, normal chat, streaming completion and failure, transcript ownership, and approval/rejection if implemented. Check two app users cannot read or act on each other's sessions. For context, verify explicit selection and denied/expired consent. For UI, build with the actual installed artifact.
+Run relevant project type/build checks. With authorized test credentials, verify login/session expiry, user mapping, normal chat, streaming completion and failure, transcript ownership, and approval/rejection if implemented. Check two app users cannot read or act on each other's sessions. For OAuth context and memory, verify the approving identity, per-user token isolation, memory choice on the selected API, app-owned sessions, and denied/expired/revoked grants. For UI, build with the actual installed artifact.
 
-Without credentials, validate against schemas and use clearly labeled mocks where useful. Missing kit access or pilot enrollment is an actionable setup requirement, not working authentication or chat. Do not run paid calls, create accounts, publish, or change external data merely because this skill was installed; stay within the user's requested work.
+Without credentials, validate against schemas and use clearly labeled mocks where useful. Missing kit access or OAuth app registration is an actionable setup requirement, not working authentication or chat. Do not run paid calls, create accounts, publish, or change external data merely because this skill was installed; stay within the user's requested work.

@@ -4,7 +4,7 @@ Read the target deployment's [auth schema](https://app.telosplatforms.com/api/pu
 
 ## Ask which authentication approach to implement
 
-Before implementing authentication or context onboarding, ask:
+When adding login and the authentication approach is unresolved, ask:
 
 > Would you like me to implement Telos-managed authentication end to end, or use your own authentication and then integrate Telos context?
 
@@ -13,13 +13,13 @@ Offer these two choices, without silently selecting one:
 | Choice | Implementation |
 |---|---|
 | **Telos-managed auth end to end** | Implement Google/Microsoft login through an approved Auth0 registration and/or email/password through Telos managed auth, according to the requested sign-in methods. Include secure app sessions, protected routes, logout, expiry/reauthentication, and error states. Configure the required scopes/secrets privately and verify the complete flow where credentials are available. |
-| **My own auth + Telos context** | Preserve the app's existing login or use the user's chosen authentication solution. Verify its server-side session, then implement Connect Telos consent, token storage/renewal, context search, and explicit snippet selection for chat where requested and supported. Do not create Telos-managed login accounts for this path. |
+| **My own auth + Telos context** | Preserve the app's existing login or use the user's chosen authentication solution. Verify its server-side session, then implement Connect Telos consent, per-user token storage, and API calls using the person’s global context and memory. Do not create Telos-managed login accounts for this path. |
 
-An explicit instruction such as “keep my existing login” or a previously recorded project choice answers this question; do not ask again. Merely finding an auth dependency does not establish the user's choice. If the user chooses their own auth but has neither an implementation nor a selected provider, ask which solution to use before building login. Keep the decision pending while doing independent work; do not treat silence as a selection.
+An explicit request for registered-app OAuth preserves the app’s login and goes directly to [Connect with Telos](#connect-with-telos-registered-app-oauth). An instruction such as “keep my existing login” or a previously recorded project choice also answers this question; do not ask again. Merely finding an auth dependency does not establish the user's choice. If the user chooses their own auth but has neither an implementation nor a selected provider, ask which solution to use before building login. Keep the decision pending while doing independent work; do not treat silence as a selection.
 
-For the managed path, use the social login or email/password section below for the requested methods. When asked for login like the Telos app, offer **Continue with Google** and **Continue with Microsoft** using the social flow. Add Connect Telos separately if the user also wants context from existing Telos accounts: managed login does not grant that consent. For the own-auth path, configure any requested social providers in the user's chosen authentication system, then use the OAuth pilot section after establishing the app session. If the request only reads connected context, it needs approved context OAuth access, not a workspace developer key or `/api/users` profile. Add developer-key setup and external-user mapping when the Assistant API or another workspace API is required.
+For the managed path, use the social login or email/password section below for the requested methods. When asked for login like the Telos app, offer **Continue with Google** and **Continue with Microsoft** using the social flow. Add Connect Telos separately if the user also wants context from existing Telos accounts: managed login does not grant that consent. For the own-auth path, configure any requested social providers in the user's chosen authentication system, then use the registered-app OAuth section after establishing the app session. For the person’s existing global context, use their OAuth grant with the required Assistant or Inference scopes; do not create a workspace-local `/api/users` profile for that connection. Use developer-key setup and external-user mapping only for the separate workspace-profile path.
 
-Record the selected approach in the project's Telos guidance and implement that path. “End to end” means the actual login/session/protected-route flow, not just forms or a mock. Respect the requested deployment scope; the choice does not itself authorize production deployment or creating real accounts for testing. Report missing credentials, pilot approval, unsupported lifecycle features, and untested live behavior explicitly.
+Record the selected approach in the project's Telos guidance and implement that path. “End to end” means the actual login/session/protected-route flow, not just forms or a mock. Respect the requested deployment scope; the choice does not itself authorize production deployment or creating real accounts for testing. Report missing credentials, OAuth app registration, unsupported lifecycle features, and untested live behavior explicitly.
 
 ## Separate credentials and identities
 
@@ -28,7 +28,7 @@ Record the selected approach in the project's Telos guidance and implement that 
 | Telos developer session | Create/revoke developer keys in Telos | Developer account; never shipped to app users |
 | Partner Auth0 application registration | Managed Google/Microsoft login for this app | Issuer/client ID are public configuration; client credentials and issued tokens stay on the partner backend |
 | Workspace developer API key | Public API calls with allowed scopes | Partner backend secret store |
-| Context OAuth access/refresh tokens | Read a consenting person's Telos context | Partner backend, bound to its authenticated app user |
+| Registered-app OAuth bearer token | Granted Assistant/Inference calls as the consenting person, with their global context and memory | App backend, bound to its authenticated app user |
 
 Your app also has an authenticated session, established by managed signup/login or existing app login. Neither a profile creation response nor an arbitrary external ID authenticates the browser user.
 
@@ -78,7 +78,7 @@ Use for Google/Gmail and Microsoft/Outlook sign-in on the selected Telos-managed
 
 Obtain the approved issuer, app-specific client ID, client authentication method/credentials, exact callback and logout URLs, and enabled connection names from Telos. Register each environment's URLs and enable the requested connections for that partner application. Do not copy Telos's first-party client configuration or infer partner access from a provider button in the Telos app. Confirm whether Microsoft access covers personal Outlook accounts, work/school accounts, or both. Telos's tenant administrator owns the upstream Google/Microsoft configuration and credentials.
 
-Keep private client credentials in the app's server configuration. Use the approved issuer's OIDC discovery document and a maintained library for the project's backend language. Request `openid profile email` for login; add an API audience or renewal scopes only when explicitly documented for this registration. Context OAuth approval and a login registration are separate capabilities; do not assume either grants the other.
+Keep private client credentials in the app's server configuration. Use the approved issuer's OIDC discovery document and a maintained library for the project's backend language. Request `openid profile email` for login; add an API audience or renewal scopes only when explicitly documented for this registration. Registered-app OAuth consent and an Auth0 login registration are separate capabilities; do not assume either grants the other.
 
 ### Shared login flow
 
@@ -88,7 +88,7 @@ Keep private client credentials in the app's server configuration. Use the appro
 4. Establish an app session only after validation. Key identity by the verified issuer and subject (`iss`, `sub`), never by email. When Assistant API or other workspace APIs are needed, persist an opaque valid external ID for that identity and provision it through `/api/users` using the developer key. Do not auto-link Google, Microsoft, or password accounts by matching email, or substitute the social token for a workspace API key.
 5. Store tokens server-side and use an HttpOnly session cookie, Secure on HTTPS, with appropriate SameSite/CSRF protection. Enforce server-side expiry, invalidate the local session on logout, and use only the documented provider logout/renewal behavior. Require reauthentication when renewal is unavailable or denied.
 
-Login does not authorize Gmail/Outlook mailbox access or Telos context search; those require their own connection and consent flows. Do not create password accounts through `/api/auth/signup` for social users.
+Login does not authorize Gmail/Outlook mailbox access or Telos global context access; those require their own connection and consent flows. Do not create password accounts through `/api/auth/signup` for social users.
 
 With authorized test accounts, verify each enabled provider's login, cancellation, invalid/replayed callback rejection, logout/expiry, stable mapping on repeat login, and isolation between two users. Keep live provider verification distinct from mocked callback tests and build checks.
 
@@ -130,20 +130,31 @@ These are schema examples, not production credentials. Send actual user input fr
 
 Use an HttpOnly cookie, Secure in HTTPS environments, appropriate SameSite/CSRF protection, and server-side expiry no later than the credential lifetime. Invalidate the session on logout. The published login response does not promise refresh tokens; require reauthentication on expiry unless the deployment documents renewal. Do not invent password-reset/account-linking endpoints. Document same-workspace login restrictions and surface signup conflicts.
 
-## Connect Telos: approved-partner OAuth pilot
+## Connect with Telos: registered-app OAuth
 
-Use for the user's selected own-auth-plus-context path, or when they additionally request connected context alongside managed auth. App login and Telos context consent remain separate. A user with an existing Telos account consents to read-only context search. Registration is manually approved. Obtain issuer, client ID/secret, distinct context audience, allowed callback URL, and enabled API origin through Telos's approved onboarding channel; configure secrets privately.
+Use when an app should act as a person with their existing Telos profile, global context and memory. Keep the app's own login. This flow connects a Telos account; it does not return an OIDC ID token or establish your app's login session. Use the target environment's [Connect with Telos guide](https://app.telosplatforms.com/developers/users#connect-with-telos) alongside the public API schemas. OAuth registration/authorization operations may be absent from the focused public schemas; that does not justify substituting the retired Auth0 Context API pilot.
 
-The pilot defines `/api/context/v1/config`, `/api/context/v1/openapi.json`, and `POST /api/context/v1/search`, separately from the developer schema. A 401/403/404 from discovery is not a valid configuration. Confirm enrollment/deployment instead of trying workspace keys against another audience.
+### Register the app
 
-Use a maintained OAuth library in the project's language:
+In [Platform → API keys → OAuth apps](https://app.telosplatforms.com/developer/api-keys), register the app name, exact redirect URIs and allowed scopes. Registration uses the app owner's signed-in Telos session (`POST /api/developer/oauth-clients`), not a developer key or an end-user grant. Use HTTPS callbacks in production; HTTP is accepted only for localhost/127.0.0.1 development. Choose a confidential client for a server app and store its once-returned client secret privately. Public clients use PKCE without a client secret.
 
-1. Require app login before connecting. Bind a single-use, expiring OAuth transaction to that stable app user.
-2. Use Authorization Code with PKCE S256 and state. Request the supplied audience and `context:search offline_access` using the registered callback.
-3. Validate state, transaction expiry, and initiating app session at callback. Reject replay/session changes. Exchange the code server-side with approved client authentication and the verifier; do not derive issuer/callback origin from untrusted headers.
-4. Encrypt tokens server-side, bound to the initiating user. Honor expiry and rotation; serialize refreshes per connection to avoid reusing rotated tokens. On refresh denial, require reconnecting instead of switching credentials.
-5. Send the context access token only to the approved Context API. It does not authorize developer-key chat calls.
+Request only the capabilities needed: `assistant:write` for turns/uploads, `assistant:read` for the app's sessions, or `inference:write` for an existing model loop. Discover grantable permissions from the registration UI/contract; workspace administration, `users:write` and `assistant:actions:approve` are not user-grantable. `memory:sync` is for requested harness-file synchronization, not a prerequisite to using saved memory; it changes the grant's learning source to `harness_sync`. Do not add connector delegation or broader scopes to enable context.
 
-Pilot configuration calls for five-minute access tokens and rotating refresh tokens with seven-day inactivity and 30-day absolute lifetimes; confirm issued values. Users revoke grants in Telos at `/connected-apps`. Revocation stops renewal; already-issued access tokens may remain usable until expiry. Local disconnect stops requests and deletes local tokens; link to Telos for grant revocation. The pilot does not promise a partner-facing revocation endpoint.
+### Authorize and exchange
 
-Continue with [Chat and context](chat-and-context.md) for selected context. Do not infer that the consenting Telos account is the same as the partner's managed-login account because emails match.
+1. Require a verified app session. Store a random state and PKCE verifier in a single-use, expiring transaction bound to that app user. Compute the S256 challenge with a maintained OAuth library.
+2. Open `GET /api/oauth/authorize` on the configured Telos origin in a top-level redirect or popup, with `response_type=code`, `client_id`, the exact `redirect_uri`, space-separated `scope`, `state`, `code_challenge` and `code_challenge_method=S256`. This flow needs no Auth0 audience, `openid` or `offline_access`. Telos presents sign-in and consent, including a memory choice. Do not embed or recreate consent in an iframe.
+3. At your callback, validate state, transaction expiry and the initiating app session before exchanging anything. Cancellation returns `error=access_denied` with state. Reject replay/session changes; clear callback parameters with a clean redirect. For a popup, validate both the callback origin and popup window before forwarding results to your backend.
+4. Exchange the code server-side with `POST /api/oauth/token`, using `application/x-www-form-urlencoded`: `grant_type=authorization_code`, `client_id`, identical `redirect_uri`, `code` and `code_verifier`; confidential apps also send `client_secret` in that form. Codes expire after five minutes and can be used once. Replaying a consumed code revokes its issued grant, so do not automatically retry an exchange after an unknown outcome; start a new authorization.
+5. Store the returned `access_token`, `token_type`, `expires_in` and `scope` privately, bound to the initiating app user. The bearer token is backed by a scoped Telos API key and currently lasts 90 days; honor the returned expiry. There are no refresh tokens. On expiry, revocation or rejected authorization, require reconnecting; do not try refresh grants or use the app owner's key.
+6. Check `GET /v1/me` with this token to record the verified Telos user ID, workspace and scopes in the server-side connection. Do not auto-link accounts by matching email or accept a browser-supplied Telos identity. The token response itself does not include an identity or memory-settings object.
+
+### Use and disconnect the connection
+
+Send `Authorization: Bearer <user's access_token>` on the granted `/v1` operations. **Omit `external_user_id` everywhere**, including message bodies, payloads, session queries and uploads. A grant cannot select another user: attempts return HTTP 403 `grant_cannot_select_user`. Do not provision `/api/users` for this connection. OpenAI `user` and Anthropic `metadata.user_id` remain attribution fields; they cannot select another person's memory.
+
+Context and memory belong to the approving person across their authorized apps; the registered app owner's workspace pays for usage. Assistant grants can use only `surface: "core"` and sessions created by that same OAuth app; shared memory does not grant access to all of the person's transcripts. The person's own scopes and resource permissions still apply. A grant cannot approve pending Assistant write actions on their behalf.
+
+Users manage the named connection in Telos's API keys page, including memory settings and revocation. Revocation stops subsequent authenticated requests immediately; approving the same app again replaces that person's previous grant. Revoking the app registration invalidates all its grants. Local disconnect stops requests and deletes the app's stored token; it does not itself revoke the Telos grant. Do not claim disconnect erases existing memories or conversation history.
+
+Continue with [Global context and memory](chat-and-context.md#use-global-context-and-memory) for API examples, learning behavior and verification.

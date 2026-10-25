@@ -25,6 +25,8 @@ The second command copies both complete skills into the project without changing
 
 [Download the latest Telos Skills](https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/telos-skills.zip) and its [SHA-256 checksum](https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/telos-skills.zip.sha256).
 
+[Download the staging-compatible 1.2.2 bundle](https://github.com/telosplatforms1/telos-partner-starter/releases/download/skills-v1.2.2/telos-skills.zip) and its [checksum](https://github.com/telosplatforms1/telos-partner-starter/releases/download/skills-v1.2.2/telos-skills.zip.sha256). The latest link above remains production-compatible.
+
 The archive includes both skill directories and a versioned file/checksum manifest. Verify the download before copying the complete directories into your assistant's supported skill location:
 
 ```sh
@@ -45,25 +47,23 @@ Keep references, scripts, metadata, and license files together. The repository a
 
 The skills load only the references relevant to the task. Connected memory profiles sync automatically while their sync client is running; the harness skill provides optional setup and recovery guidance.
 
-## Managed harness launch
+## One-time harness setup
 
-Use this command for future Pi sessions (replace `pi` with your installed harness):
+Copy the setup command from your Telos environment’s connection page. Run it once to connect Telos, install both skills and launch your harness. After setup, start your harness normally, such as `hermes`, `pi`, or `opencode` (`openclaw chat` for OpenClaw).
 
-```sh
-uv run --script https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/telos-harness.py launch pi --skills-url https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/telos-skills.zip
-```
-
-Each managed launch downloads the latest published skills, verifies the manifest, and starts the real harness with its existing provider and credentials. It can install the skills without account setup. Locally edited skills are kept intact and reported, including additions and deletions; other clean skills update. Restore the original files or move the customized directory aside to resume its updates. Download/validation failures stop the launch with an error. Pass native harness arguments after `--`, and set profile-directory environment overrides before launching.
-
-Existing commands using a Telos environment's `/install/` assets follow that deployment; switch once to the published command above to follow public releases. Bare harness commands do not refresh skills. Version-pinned release URLs stay pinned.
-
-Initial Telos account/tool setup uses the same public installer with your environment's explicit API origin, for example:
+The [skills-v1.2.2 release](https://github.com/telosplatforms1/telos-partner-starter/releases/tag/skills-v1.2.2) includes automatic memory-mode switching and requires the updated memory-control API, currently deployed to staging. Its public staging setup command is:
 
 ```sh
-uv run --script https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/telos-harness.py pi --base-url https://app.telosplatforms.com/v1 --skills-url https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/telos-skills.zip --connector-only --connectors
+uv run --script https://github.com/telosplatforms1/telos-partner-starter/releases/download/skills-v1.2.2/telos-harness.py hermes --base-url https://telos1-staging.up.railway.app/v1 --skills-url https://github.com/telosplatforms1/telos-partner-starter/releases/download/skills-v1.2.2/telos-skills.zip --connector-only --connectors --sync-memories
 ```
 
-This preserves the inference provider and requests connector reads through browser consent. Optional memory setup uses `--sync-memories`; its runtime is included as a separate public release asset. Account setup is independent of installing or refreshing skills.
+This keeps the inference provider and requests connector reads and memory-sync access through browser consent. The same setup prepares memory sync for either mode: Harness Memories enables file sync; Telos Memories or memory off pauses it. The background service checks settings every 30 seconds while online, and the API rejects uploads immediately when Harness Memories is inactive. Telos Memories requires Telos inference and cannot be combined with `--connector-only`. Existing installations run setup once to upgrade their matching service and preserve enrolled source identities. Keep profile-directory overrides set when configuring and starting a named profile.
+
+Production environments that have not deployed the memory-control API must continue using their environment’s supplied installer. The public `latest` assets remain on the production-compatible 1.2.1 release until that rollout; the staging connection page pins 1.2.2.
+
+### Optional skill refresh
+
+Normal launches use the installed skills. To refresh them explicitly before a session, the installer supports `launch <harness> --skills-url <bundle-url> -- <native-arguments>`. This does not repeat consent or change providers. Locally edited skills are preserved; download or validation errors stop the optional refresh launch. Version-pinned bundles remain pinned.
 
 The app skill recommends enabled routers first: **Orbit** for balanced use, **Zenith** for quality, **Warp** for speed, and **Slingshot** for cost. It discovers workspace availability and exact IDs, preserves explicit model choices, and confirms fixed-model-to-router migrations.
 
