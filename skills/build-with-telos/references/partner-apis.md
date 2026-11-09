@@ -19,7 +19,7 @@ Prefer focused schemas where available:
 | App profiles | [Users](https://app.telosplatforms.com/api/public/openapi/users.json) | `users:write`; profiles are not logins |
 | Managed signup/login | [Managed auth](https://app.telosplatforms.com/api/public/openapi/users/auth0.json) | `auth:user:create` / `auth:user:login` |
 | Assistant API: messages, sessions, files, action decisions, skills | [Assistant API](https://app.telosplatforms.com/api/public/openapi/assistant.json) | `assistant:read`, `assistant:write`, `assistant:actions:approve`; Telos runs the harness |
-| Inference API: model turns, catalog, image/video jobs, typed evaluations | [Inference API](https://app.telosplatforms.com/api/public/openapi/inference.json) | `inference:write` (the catalog is public); one turn, client-owned tools, no sessions; see [Migrate existing chat](migrate-existing-chat.md) |
+| Inference API: Messages, Chat Completions, Responses, media jobs, typed evaluations | [Inference API](https://app.telosplatforms.com/api/public/openapi/inference.json) | `inference:write` (the catalog is public); client-owned tools/history; public model/router IDs for turns, provider bindings for media; see [Migrate existing chat](migrate-existing-chat.md) |
 | Key/grant check | `GET /v1/me` | Developer key or OAuth grant; returns its effective user, workspace, and scopes |
 | Owned automations | [Automations](https://app.telosplatforms.com/api/public/openapi/automations.json) | Read/write/approve and evaluation scopes differ; check ownership |
 | User skills | Full public schema, if deployed | `skills:read` / `skills:write`; runtime skills differ from installing this coding-assistant skill |
@@ -36,14 +36,8 @@ This is navigation, not a second endpoint registry. Offer a capability only afte
 - Billing restrictions require account setup. For 429, respect documented limits/retry timing. Retry only where repetition is safe.
 - If schema access fails, report URL/status and request authoritative schema/access. Never require private Telos source for an external integration or silently change environments.
 
-## Release observations and follow-ups
+## Contract checks and gaps
 
-Historical observations through 2026-10-13; recheck the target contract rather than treating these as permanent capability declarations:
+Production schemas checked 2026-11-04 advertise API version 3.0.0 and all three inference protocols plus `/v1/assistant/*`. Authentication and user APIs retain their documented paths. The version alone does not establish feature parity; fetch the target deployment's actual operations and schemas.
 
-- API version 3.0.0 (2026-10-13) moved public inference and assistant operations under `/v1` (authentication and user APIs retain their documented paths) and renamed ChatKit to the Assistant API; old `/api/chatkit/*`, `/api/models`, `/api/images/*`, `/api/videos/*`, and `/api/evaluations` paths return 404. Check `info.version` in the target environment's schema before assuming the new paths are deployed there.
-- The public Assistant API envelope has a generic `payload`. Follow-up: publish a concrete core payload covering context, attachment handles, and action state. Until then verify against deployed docs and mark unconfirmed features blocked.
-- Use the verified neutral `@telosplatforms/ai-kit@0.2.0` release archive described in [UI kit](ui-kit.md); it includes the maintained public catalog and theme template.
-
-- `POST /v1/chat/completions` (OpenAI/OpenRouter clients) was added after that check. Confirm it, and the superset `GET /v1/models`, in the target environment's public schema before promising the migration path there; if absent, the follow-up is to deploy the backend that includes it.
-
-Record newly discovered gaps with method/path, observed behavior, required contract clarification, and user-visible consequence. Do not modify Telos APIs or guess compatibility behavior to hide gaps.
+The Assistant envelope still has a generic `payload`; confirm surface-specific fields against deployed docs and mark unconfirmed features blocked. Record gaps with method/path, observed behavior, required clarification and user-visible consequence. Do not modify Telos APIs or guess compatibility behavior to hide gaps.

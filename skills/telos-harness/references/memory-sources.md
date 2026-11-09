@@ -2,14 +2,17 @@
 
 The sync engine reads approved UTF-8 `.md`/`.txt` files; it does not interpret sessions or generate memories. Connect the actual installation/profile once; memory sync needs no content review. Directory watchers plus periodic reconciliation upload revisions. Missing roots and failed scans do not delete cloud data.
 
-| Harness | Supported source | Discovery and limits |
+| Harness | Automatic source | Limits |
 |---|---|---|
-| Hermes | `MEMORY.md`, `USER.md` in the active profile's `memories/` directory | `HERMES_HOME` overrides `~/.hermes`. Select other profile roots explicitly. Keep native memory enabled. |
-| Claude Code | `MEMORY.md` plus selected topic `.md` files in the auto-memory directory | Default `~/.claude/projects/<project>/memory/`; `CLAUDE_CONFIG_DIR` and `autoMemoryDirectory` can change it. Select custom locations explicitly. `CLAUDE.md` is an instruction file. |
-| Codex | `MEMORY.md`, `memory_summary.md` in the configured memory root | Default `$CODEX_HOME/memories`, normally `~/.codex/memories`. Exclude `raw_memories.md`, `rollout_summaries/`, sessions, skills, and internal SQLite databases. An empty memory directory is valid. Upload support does not add Responses API compatibility to Telos. |
-| Pi | Selected curated files or a supported text export from the installed memory extension | There is no assumed universal memory source. Respect `PI_CODING_AGENT_DIR` and the extension's documentation. An installation without a memory extension may have nothing to sync. |
-| OpenCode | Selected curated files or a supported text export from the installed memory plugin | Inspect the actual plugin and effective configured location. `AGENTS.md` is an instruction file, not a memory export. |
-| Other | Explicitly selected curated `.md`/`.txt` files | Unsupported structured/database formats must use a supported export; do not guess their schema. |
+| Hermes | Active profile's `memories/`; honor `HERMES_HOME` | `MEMORY.md` and `USER.md`; preserve native learning. |
+| Claude Code | Explicit `autoMemoryDirectory`; otherwise managed memory with user-level rules | Preserve existing project auto-memory and native settings. |
+| Codex | Previously enrolled source; otherwise managed memory with native developer instructions | Keep the existing inference provider. Grant only the managed directory as an additional writable root; retain native sandbox/approval policy. |
+| Pi | Managed memory, with a marked block in the active global instruction file | Honor `PI_CODING_AGENT_DIR`; preserve existing global and project instructions. |
+| OpenCode | Managed memory, loaded through native `instructions` configuration | Preserve existing plugins and instructions. |
+| OpenClaw | Active workspace reported by native metadata | Only curated `MEMORY.md` and `USER.md`; exclude daily logs and other workspace files. |
+| Aider | Telos conversation memory through inference | No file sync, editable memory files, or Git-setting changes. |
+
+Explicit `--memory-root`, `--memory-profile`, and `--memory-files` remain advanced overrides for file-capable harnesses. Otherwise setup reuses the enrolled source for the verified account, environment, and active profile, then considers verified native configuration. Ambiguous native candidates use managed storage without a folder picker. Managed storage is isolated beside the per-key encrypted service state and contains `MEMORY.md` plus a nonsecret `capture.json` status; only the memory file is uploaded.
 
 Read only selected memory roots, never whole home/configuration directories. Symlinked files or directory escapes, invalid UTF-8, NUL bytes, and files larger than 128 KiB are rejected. Sync status reports these errors without silent truncation. Each file becomes a separately attributed source. Connecting a curated directory includes future supported files automatically, unless an explicit file list limits the connection. Changes need no further review. Native file writes, history, and memory controls remain owned by the harness.
 

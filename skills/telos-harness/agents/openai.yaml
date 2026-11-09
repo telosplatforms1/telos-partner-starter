@@ -1,3 +1,3 @@
 interface:
   display_name: "Telos Harness"
-  short_description: "Connect and use Telos in your coding agent"
+  short_description: "Use Telos and switch coding harnesses with a task handoff"

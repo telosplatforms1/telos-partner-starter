@@ -49,21 +49,35 @@ The skills load only the references relevant to the task. Connected memory profi
 
 ## One-time harness setup
 
-Copy the setup command from your Telos environment’s connection page. Run it once to connect Telos, install both skills and launch your harness. After setup, start your harness normally, such as `hermes`, `pi`, or `opencode` (`openclaw chat` for OpenClaw).
+Copy the setup command from your Telos environment’s connection page. The page downloads the installer and bundles from this repository’s latest public release, while its explicit `--base-url` keeps authorization and API calls in your selected environment. The shell and PowerShell bootstraps install uv when needed.
 
-The [skills-v1.2.2 release](https://github.com/telosplatforms1/telos-partner-starter/releases/tag/skills-v1.2.2) includes automatic memory-mode switching and requires the updated memory-control API, currently deployed to staging. Its public staging setup command is:
+For macOS / Linux with the production API:
 
 ```sh
-uv run --script https://github.com/telosplatforms1/telos-partner-starter/releases/download/skills-v1.2.2/telos-harness.py hermes --base-url https://telos1-staging.up.railway.app/v1 --skills-url https://github.com/telosplatforms1/telos-partner-starter/releases/download/skills-v1.2.2/telos-skills.zip --connector-only --connectors --sync-memories
+(s=$(curl -fsSL 'https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/setup.sh') && sh -c "$s" -- 'https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/' --base-url 'https://app.telosplatforms.com/v1' --sync-memories)
 ```
 
-This keeps the inference provider and requests connector reads and memory-sync access through browser consent. The same setup prepares memory sync for either mode: Harness Memories enables file sync; Telos Memories or memory off pauses it. The background service checks settings every 30 seconds while online, and the API rejects uploads immediately when Harness Memories is inactive. Telos Memories requires Telos inference and cannot be combined with `--connector-only`. Existing installations run setup once to upgrade their matching service and preserve enrolled source identities. Keep profile-directory overrides set when configuring and starting a named profile.
+Setup asks which harness to connect, then whether to share context with Codex, Claude Code, both, or neither. Selected context clients keep their existing model logins. Missing harnesses are installed before authorization. Each client authorizes its own connection. Run setup once, then launch your harness normally (`hermes`, `pi`, `opencode`, or `openclaw chat`, for example). Restart Codex or Claude Code after setup and review native hooks when prompted.
 
-Production environments that have not deployed the memory-control API must continue using their environment’s supplied installer. The public `latest` assets remain on the production-compatible 1.2.1 release until that rollout; the staging connection page pins 1.2.2.
+When uv is already installed, the equivalent direct command is:
 
-### Optional skill refresh
+```sh
+uv run --python-preference only-managed --python 3.14 --script https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/telos-harness.py --base-url https://app.telosplatforms.com/v1 --skills-url https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/telos-skills.zip --sync-memories
+```
 
-Normal launches use the installed skills. To refresh them explicitly before a session, the installer supports `launch <harness> --skills-url <bundle-url> -- <native-arguments>`. This does not repeat consent or change providers. Locally edited skills are preserved; download or validation errors stop the optional refresh launch. Version-pinned bundles remain pinned.
+Use an explicit harness argument before the options for noninteractive setup. `--subscription` keeps a Codex or Claude Code model login and connects automatic read-only recall plus curated memory sync. Optional connected-account reads, delegated actions and explicit context imports require their respective grants; use your connection page to select them. Installing skills alone grants no access.
+
+Memory sync runs independently through its background service when enabled. Harness Memories enables curated-file sync; Telos Memories or memory off pauses it. Subscription recall requires the target API’s memory-read scope and recall endpoint (available in current production). Locally hosted or older deployments must provide the same API contract. Keep profile-directory overrides set when configuring and starting a named profile.
+
+### Refresh skills before a session
+
+The managed launch command refreshes both skills without repeating consent or changing providers:
+
+```sh
+uv run --python-preference only-managed --python 3.14 --script https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/telos-harness.py launch pi --skills-url https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/telos-skills.zip
+```
+
+Replace `pi` with your harness. Pass native arguments after `--`. Bare harness commands use installed skills without refreshing. Locally edited skills are preserved; download or validation errors stop managed launch. Use a versioned release URL to stay pinned.
 
 The app skill recommends enabled routers first: **Orbit** for balanced use, **Zenith** for quality, **Warp** for speed, and **Slingshot** for cost. It discovers workspace availability and exact IDs, preserves explicit model choices, and confirms fixed-model-to-router migrations.
 
@@ -72,8 +86,8 @@ The app skill recommends enabled routers first: **Orbit** for balanced use, **Ze
 - App integrations require the target deployment's documented API access and privately configured server credentials where applicable. Managed social login and context OAuth need approved partner registration. Missing access is reported as a setup dependency.
 - The React UI kit is a separate artifact, described in the app skill's UI reference. Installing these skills does not install that package or a backend.
 - Use the harness setup command generated by your Telos environment. Environments whose command includes `--skills-url` install both skills as part of setup; the command above also installs them independently.
-- Codex uses Telos connectors while retaining its existing inference provider. Aider's verified integration supports inference and reference material; it has no supported native Agent Skills or MCP loader.
-- Optional curated memory sync requires Node.js 22+, supported profile files, and OS secure storage on macOS or Linux. Pi and OpenCode need a supported memory extension/export. Each harness keeps its own tools, history, and native memory.
+- Codex supports Telos inference or keeping its existing inference provider with context-only setup. Aider's verified integration supports inference and reference material; it has no supported native Agent Skills or MCP loader.
+- Optional curated memory sync requires Node.js 22+, supported profile files, and OS secure storage (Keychain, Linux Secret Service, or Windows DPAPI). Pi and OpenCode need a supported memory extension/export. Each harness keeps its own tools, history, and native memory.
 - Capabilities depend on the target environment's [public API contract](https://app.telosplatforms.com/api/public/openapi.json), enabled permissions, and actual installed harness version. The skills distinguish configuration, mocked checks, and live verification.
 
 MIT licensed. The license covers these skill files, not Telos services, UI-kit artifacts, trademarks, or third-party dependencies.

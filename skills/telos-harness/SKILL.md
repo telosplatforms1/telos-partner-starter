@@ -1,10 +1,10 @@
 ---
 name: telos-harness
-description: Set up or use Telos in a coding agent, including model selection, connected tools, reconnects, memory, and troubleshooting in the active harness.
+description: Set up or use Telos in a coding agent, switch harnesses with a task handoff, select models, use connected tools, reconnect, and troubleshoot memory or the active harness.
 license: MIT
 metadata:
   author: Telos
-  version: "1.1.0"
+  version: "1.2.8"
 ---
 
 # Telos in your coding agent
@@ -25,6 +25,12 @@ Identify the running harness/version, profile, effective configuration and Telos
 | Codex | [Connectors with the existing inference provider](references/codex.md) |
 | Aider | [Inference and model roles](references/aider.md) |
 
+## Switch harnesses
+
+Use `/telos-harness switch` to choose a harness, or `/telos-harness switch pi` to name one. Pi uses `/skill:telos-harness switch pi`; Codex uses `$telos-harness switch pi` (or select Telos Harness in its skills picker). OpenClaw may display the command as `/telos_harness`; use its discovered command name. Aider has no native skill command. Natural requests such as “switch to Pi” follow the same workflow.
+
+For a switch request, read [Switching and task handoff](references/switching.md). Choose the target, preserve its saved settings, prepare a concise continuation prompt, and give the user one terminal launch command. The destination is a separate session; this skill cannot replace the current harness process or move its native chat history.
+
 ## First connection, including users without an account
 
 Installing the skills or using managed `launch` does not require a Telos account. Telos inference, connected tools and memory require an authenticated connection; installation alone does not enable them.
@@ -40,6 +46,7 @@ Browser approval currently waits **three minutes**. If the terminal reports `aut
 - For requested connection changes, reuse the connection page's generated command and the existing installer; do not replace it with a proxy or provider patch.
 - Use the managed `launch` command in the public repository README for future sessions; it loads the installer and bundle from `https://github.com/telosplatforms1/telos-partner-starter/releases/latest/download/`. It refreshes both skills before starting the native harness, without changing inference settings or requesting new consent. Older environment-hosted commands follow that deployment; switch to the published command to follow public releases. A locally edited skill (including added/deleted files) is preserved as a whole and reported; clean skills still update. Restore its original files or move the edited directory aside to resume updates. Download/validation/write failures stop the launch with a typed error. Bare harness commands bypass refresh; pass native arguments after `--`. A version-pinned bundle stays pinned.
 - Discover exact callable model/router IDs with authenticated `/v1/models`; use `/v1/catalog` for supported metadata. Preserve the user's choice and effective native overrides. Reuse setup with the chosen ID to update native defaults, then check a fresh session. A saved default alone does not prove which model answered. Do not issue paid inference merely to check configuration unless requested.
+- Connected accounts' own tools, prompts and resources are on the `telos-accounts` MCP server, named `<account>_<name>`; use them as you would the provider's own server. When a task needs an account that has none there, call `list_accounts` on the `telos` MCP server before using a native skill or tool that asks for an API key, token or password. If the account is not connected or not allowed here, call `connect_account` and give the user the returned link; never collect provider secrets in chat.
 - For connected-account tasks, discover the available tools, their schemas and account bindings using the harness's native discovery. Follow the shared MCP instructions and existing user choices. Do not copy tool catalogs into this skill, guess names/arguments, or interpret an empty resource listing as missing tools.
 - Read access and delegated actions require their respective explicit grants in setup. Installing a skill does not request either. Keep native permissions and denials binding; never route a denied action through another integration. For an uncertain write outcome, inspect the result before retrying.
 - Separate an expired Telos key from an expired connected account. For a Telos 401, rerun the existing authorization flow; never print keys or put secrets in arguments. For account recovery, follow the returned browser connection link, wait for completion, refresh discovery and retry the requested read. Do not switch accounts or grant broader scopes to hide errors.
